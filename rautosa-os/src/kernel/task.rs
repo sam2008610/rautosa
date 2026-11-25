@@ -11,7 +11,7 @@
 //!
 //! # Specification
 //!
-//! * OSEK OS §4.2, Figures 4-1 and 4-2: the four states and the transitions
+//! * OSEK OS §4.2, Figures 4-1 to 4-4: the four states and the transitions
 //!   *activate*, *start*, *wait*, *release*, *preempt*, *terminate*. Basic
 //!   tasks have no *waiting* state.
 //! * OSEK OS §4.2.3, §3.2: what differs between basic and extended tasks and

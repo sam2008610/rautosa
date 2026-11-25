@@ -9,7 +9,7 @@
 //!
 //! # Specification
 //!
-//! * OSEK OS §4.5 "Task priority", Figure 4-3: the scheduler's queue model. A
+//! * OSEK OS §4.5 "Task priority", Figure 4-5: the scheduler's queue model. A
 //!   preempted task is the *first* of its priority's queue; a task released
 //!   from *waiting* is the *last*.
 //! * OSEK OS §4.6: full preemptive (§4.6.1), non preemptive (§4.6.2), groups
