@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SWS OS Requirements</title>
+<style>
+:root {
+  --bg: #f6f5f1; --surface: #ffffff; --ink: #1d1c1a; --muted: #6d6961; --line: #e3e0d8;
+  --accent: #b14a22; --accent-soft: #f6e5dc; --mark: #ffe58a; --code: #f1efe9;
+  --s1: #2f7d4f; --s2: #2b6cb0; --s3: #7a4bb5; --s4: #b7641a; --s0: #6d6961;
+  --done: #2f7d4f; --doing: #b7641a; --todo: #2b6cb0;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161514; --surface: #1f1e1c; --ink: #ebe8e1; --muted: #a09b90; --line: #33312d;
+    --accent: #f08a5d; --accent-soft: #3a2519; --mark: #6b5a12; --code: #292724;
+    --s1: #6cc48f; --s2: #76aef0; --s3: #b995ee; --s4: #eda25a; --s0: #a09b90;
+    --done: #6cc48f; --doing: #eda25a; --todo: #76aef0;
+  }
+}
+* { box-sizing: border-box; }
+html { scroll-padding-top: 76px; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.55 var(--sans); }
+a { color: inherit; }
+button, input, select { font: inherit; color: inherit; }
+
+.top { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; gap: 16px; padding: 10px 20px; flex-wrap: wrap; }
+.brand { font-weight: 650; letter-spacing: -0.01em; white-space: nowrap; }
+.brand small { color: var(--muted); font-weight: 400; margin-left: 6px; }
+.search { flex: 1 1 280px; position: relative; }
+.search input { width: 100%; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--surface); outline: none; }
+.search input:focus { border-color: var(--accent); }
+.count { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.layout { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 28px; max-width: 1280px;
+  margin: 0 auto; padding: 20px; }
+aside { position: sticky; top: 68px; align-self: start; max-height: calc(100vh - 84px); overflow: auto;
+  padding-right: 6px; font-size: 13.5px; }
+aside h2 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted);
+  margin: 18px 0 6px; font-weight: 600; }
+aside h2:first-child { margin-top: 0; }
+.opt { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; border: 0; background: none;
+  padding: 4px 8px; border-radius: 6px; cursor: pointer; }
+.opt:hover { background: var(--code); }
+.opt.on { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.opt .n { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; font-weight: 400; }
+.opt .lbl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.opt.sub { padding-left: 22px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--s0); }
+.bar { height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; margin: 2px 8px 6px; }
+.bar i { display: block; height: 100%; background: var(--done); }
+.tools { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.tools button { border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 4px 9px;
+  cursor: pointer; font-size: 12.5px; }
+.tools button:hover { border-color: var(--accent); color: var(--accent); }
+.note { color: var(--muted); font-size: 12px; margin-top: 16px; line-height: 1.45; }
+
+main h3 { font-size: 13px; color: var(--muted); font-weight: 500; margin: 26px 0 8px; padding-bottom: 6px;
+  border-bottom: 1px solid var(--line); }
+main h3:first-child { margin-top: 0; }
+main h3 b { color: var(--ink); font-weight: 650; }
+.req { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px;
+  margin-bottom: 10px; border-left: 3px solid var(--stage, var(--s0)); }
+.req.flash { animation: flash 1.4s ease-out; }
+@keyframes flash { from { box-shadow: 0 0 0 3px var(--accent); } to { box-shadow: 0 0 0 3px transparent; } }
+.req header { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.rid { font: 600 13.5px var(--mono); color: var(--accent); text-decoration: none; }
+.rid:hover { text-decoration: underline; }
+.rtitle { font-weight: 600; }
+.chip { font-size: 11.5px; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted);
+  white-space: nowrap; }
+.chip.stage { color: var(--stage); border-color: currentColor; }
+.page { margin-left: auto; color: var(--muted); font-size: 12px; white-space: nowrap; }
+.text { margin: 8px 0 0; white-space: pre-line; overflow-wrap: anywhere; }
+.text.pre { white-space: pre-wrap; font: 12.5px/1.5 var(--mono); background: var(--code); border-radius: 6px;
+  padding: 10px 12px; max-height: 340px; overflow: auto; }
+.text a, .refs a { color: var(--accent); text-decoration: none; font-family: var(--mono); font-size: 0.92em; }
+.text a:hover, .refs a:hover { text-decoration: underline; }
+mark { background: var(--mark); color: inherit; border-radius: 2px; }
+.req footer { display: flex; align-items: center; gap: 8px 14px; flex-wrap: wrap; margin-top: 10px;
+  font-size: 12.5px; color: var(--muted); }
+.req footer code { font: 12px var(--mono); background: var(--code); padding: 1px 6px; border-radius: 4px;
+  color: var(--ink); }
+.mine { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+.mine select, .mine input { border: 1px solid var(--line); background: var(--bg); border-radius: 6px;
+  padding: 2px 6px; font-size: 12.5px; }
+.mine input { width: 190px; }
+.mine select[data-v="done"] { color: var(--done); border-color: currentColor; }
+.mine select[data-v="doing"] { color: var(--doing); border-color: currentColor; }
+.mine select[data-v="todo"] { color: var(--todo); border-color: currentColor; }
+.empty { color: var(--muted); padding: 60px 0; text-align: center; }
+.more { display: block; margin: 16px auto; border: 1px solid var(--line); background: var(--surface);
+  border-radius: 8px; padding: 8px 18px; cursor: pointer; }
+
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; padding: 16px; gap: 12px; }
+  aside { position: static; max-height: none; }
+  .mine { margin-left: 0; width: 100%; }
+  .mine input { flex: 1; }
+}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="brand">SWS OS Requirements<small id="release"></small></div>
+  <div class="search"><input id="q" type="search" placeholder="Search ID, text, service name…  (press /)" autocomplete="off"></div>
+  <div class="count" id="count"></div>
+</div>
+<div class="layout">
+  <aside id="side"></aside>
+  <main id="list"></main>
+</div>
+<script type="application/json" id="sws-data">__SWS_DATA__</script>
+<script>
+"use strict";
+const DATA = JSON.parse(document.getElementById("sws-data").textContent);
+const REQS = DATA.requirements;
+const BY_ID = new Map(REQS.map(r => [r.id, r]));
+const STAGES = DATA.meta.stages.filter(s => REQS.some(r => r.stage === s));
+const STAGE_COLOR = s => s.startsWith("Stage 1") ? "var(--s1)" : s.startsWith("Stage 2") ? "var(--s2)"
+  : s.startsWith("Stage 3") ? "var(--s3)" : s.startsWith("Stage 4") ? "var(--s4)" : "var(--s0)";
+const STATUS = [["", "—"], ["todo", "To do"], ["doing", "In progress"], ["done", "Done"], ["na", "Not applicable"]];
+const STORE_KEY = "rautosa.sws-os.status";
+const PAGE_SIZE = 150;
+
+let mine = {};
+try { mine = JSON.parse(localStorage.getItem(STORE_KEY) || "{}"); } catch (e) { /* storage unavailable */ }
+const save = () => { try { localStorage.setItem(STORE_KEY, JSON.stringify(mine)); } catch (e) { /* ignore */ } };
+
+const state = { q: "", stage: "", kind: "", section: "", trace: "", my: "", limit: PAGE_SIZE };
+
+const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const terms = () => state.q.toLowerCase().split(/\s+/).filter(Boolean);
+const group2 = r => r.path.length > 1 ? r.path[1] : r.path[0] || r.section;
+
+function decorate(text) {
+  let html = esc(text);
+  const ts = terms().map(t => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  if (ts.length) html = html.replace(new RegExp("(" + ts.join("|") + ")", "gi"), "<mark>$1</mark>");
+  return html.replace(/SWS_(?:<mark>)?Os(?:<\/mark>)?(?:_[A-Z]+)?_\d{5}/g, m => {
+    const id = m.replace(/<\/?mark>/g, "");
+    return BY_ID.has(id) ? `<a href="#${id}" data-jump="${id}">${m}</a>` : m;
+  });
+}
+
+function matches(r) {
+  if (state.stage && r.stage !== state.stage) return false;
+  if (state.kind && r.kind !== state.kind) return false;
+  if (state.section && !(r.section.number === state.section || r.section.number.startsWith(state.section + "."))) return false;
+  if (state.trace === "yes" && !r.code.length) return false;
+  if (state.trace === "no" && r.code.length) return false;
+  const status = (mine[r.id] || {}).s || "";
+  if (state.my === "none" ? status : state.my && status !== state.my) return false;
+  const ts = terms();
+  if (ts.length) {
+    const hay = r._hay || (r._hay = [r.id, r.title, r.text, r.section.title, r.upstream.join(" "), r.code.join(" ")].join("\n").toLowerCase());
+    if (!ts.every(t => hay.includes(t))) return false;
+  }
+  return true;
+}
+
+function card(r) {
+  const my = mine[r.id] || {};
+  const opts = STATUS.map(([v, l]) => `<option value="${v}"${v === (my.s || "") ? " selected" : ""}>${l}</option>`).join("");
+  const foot = [];
+  if (r.upstream.length) foot.push(`<span>Upstream ${r.upstream.map(u => `<code>${esc(u)}</code>`).join(" ")}</span>`);
+  if (r.code.length) foot.push(`<span>Code ${r.code.map(c => `<code>${esc(c)}</code>`).join(" ")}</span>`);
+  return `<article class="req" id="${r.id}" style="--stage:${STAGE_COLOR(r.stage)}">
+<header><a class="rid" href="#${r.id}" title="Link to this requirement">${decorate(r.id).replace(/<a [^>]*>|<\/a>/g, "")}</a>
+${r.title ? `<span class="rtitle">${decorate(r.title)}</span>` : ""}
+<span class="chip stage">${esc(r.stage)}</span>${r.kind !== "Requirement" ? `<span class="chip">${esc(r.kind)}</span>` : ""}
+${r.status ? `<span class="chip">${esc(r.status)}</span>` : ""}<span class="page">p. ${r.page}</span></header>
+<div class="text${r.tabular ? " pre" : ""}">${decorate(r.text)}</div>
+<footer>${foot.join("")}<span class="mine"><select data-status="${r.id}" data-v="${my.s || ""}" aria-label="My status">${opts}</select>
+<input data-note="${r.id}" value="${esc(my.n || "")}" placeholder="note / test name" aria-label="My note"></span></footer>
+</article>`;
+}
+
+function renderList() {
+  const hits = REQS.filter(matches);
+  const shown = hits.slice(0, state.limit);
+  let html = "", last = "";
+  for (const r of shown) {
+    if (r.section.number !== last) {
+      last = r.section.number;
+      const crumbs = r.path.slice(0, -1).map(p => esc(p.title)).join(" › ");
+      html += `<h3>${crumbs ? crumbs + " › " : ""}<b>${esc(r.section.number)} ${esc(r.section.title)}</b></h3>`;
+    }
+    html += card(r);
+  }
+  if (!hits.length) html = `<div class="empty">No requirement matches the current filters.</div>`;
+  if (hits.length > shown.length) html += `<button class="more" id="more">Show ${Math.min(PAGE_SIZE, hits.length - shown.length)} more of ${hits.length - shown.length} remaining</button>`;
+  document.getElementById("list").innerHTML = html;
+  document.getElementById("count").textContent = `${hits.length} of ${REQS.length}`;
+}
+
+function option(key, value, label, n, extra = "") {
+  const on = state[key] === value ? " on" : "";
+  return `<button class="opt${on}${extra}" data-key="${key}" data-value="${esc(value)}" title="${esc(label)}"><span class="lbl">${esc(label)}</span><span class="n">${n}</span></button>`;
+}
+
+function renderSide() {
+  const count = fn => REQS.filter(fn).length;
+  let html = "<h2>Roadmap stage</h2>";
+  for (const s of STAGES) {
+    const all = REQS.filter(r => r.stage === s);
+    const done = all.filter(r => ["done", "na"].includes((mine[r.id] || {}).s)).length;
+    const on = state.stage === s ? " on" : "";
+    html += `<button class="opt${on}" data-key="stage" data-value="${esc(s)}"><span class="dot" style="background:${STAGE_COLOR(s)}"></span><span class="lbl">${esc(s)}</span><span class="n">${done ? done + "/" : ""}${all.length}</span></button>`;
+    html += `<div class="bar"><i style="width:${(100 * done / all.length).toFixed(1)}%"></i></div>`;
+  }
+  html += "<h2>Kind</h2>";
+  for (const k of [...new Set(REQS.map(r => r.kind))]) html += option("kind", k, k, count(r => r.kind === k));
+  html += "<h2>Traceability</h2>";
+  html += option("trace", "yes", "Referenced in Rust code", count(r => r.code.length));
+  html += option("trace", "no", "Not referenced yet", count(r => !r.code.length));
+  html += "<h2>My status</h2>";
+  for (const [v, l] of STATUS.slice(1)) html += option("my", v, l, count(r => (mine[r.id] || {}).s === v));
+  html += option("my", "none", "No status", count(r => !(mine[r.id] || {}).s));
+  html += `<div class="tools"><button id="export">Export status</button><button id="import">Import status</button><button id="reset">Clear filters</button></div>`;
+  html += "<h2>Section</h2>";
+  const chapters = new Map();
+  for (const r of REQS) {
+    const top = r.path[0] || r.section, sub = group2(r);
+    if (!chapters.has(top.number)) chapters.set(top.number, { top, n: 0, subs: new Map() });
+    const c = chapters.get(top.number); c.n++;
+    if (sub.number !== top.number) {
+      if (!c.subs.has(sub.number)) c.subs.set(sub.number, { sub, n: 0 });
+      c.subs.get(sub.number).n++;
+    }
+  }
+  for (const { top, n, subs } of chapters.values()) {
+    html += option("section", top.number, `${top.number} ${top.title}`, n);
+    for (const { sub, n: m } of subs.values()) html += option("section", sub.number, `${sub.number} ${sub.title}`, m, " sub");
+  }
+  html += `<p class="note">${esc(DATA.meta.document)}, ${esc(DATA.meta.release)}. Extracted from <code>${esc(DATA.meta.source)}</code> on ${esc(DATA.meta.generated)}.<br><br>
+Requirement text © AUTOSAR, reproduced unmodified for informational purposes only. Keep this file local — do not publish it.
+Stage labels and status tracking are Rautosa's own additions.</p>`;
+  document.getElementById("side").innerHTML = html;
+}
+
+function render() { renderSide(); renderList(); }
+
+function jump(id) {
+  let el = document.getElementById(id);
+  if (!el && BY_ID.has(id)) {
+    Object.assign(state, { q: "", stage: "", kind: "", section: "", trace: "", my: "", limit: REQS.length });
+    document.getElementById("q").value = "";
+    render();
+    el = document.getElementById(id);
+  }
+  if (!el) return;
+  el.scrollIntoView({ block: "start" });
+  el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
+}
+
+document.getElementById("side").addEventListener("click", e => {
+  const opt = e.target.closest(".opt");
+  if (opt) {
+    const { key, value } = opt.dataset;
+    state[key] = state[key] === value ? "" : value;
+    state.limit = PAGE_SIZE;
+    render(); window.scrollTo(0, 0);
+    return;
+  }
+  if (e.target.id === "reset") {
+    Object.assign(state, { q: "", stage: "", kind: "", section: "", trace: "", my: "", limit: PAGE_SIZE });
+    document.getElementById("q").value = ""; render();
+  } else if (e.target.id === "export") {
+    const blob = new Blob([JSON.stringify(mine, null, 1)], { type: "application/json" });
+    const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: "sws-os-status.json" });
+    a.click(); URL.revokeObjectURL(a.href);
+  } else if (e.target.id === "import") {
+    const input = Object.assign(document.createElement("input"), { type: "file", accept: "application/json" });
+    input.onchange = async () => {
+      try { mine = Object.assign(mine, JSON.parse(await input.files[0].text())); save(); render(); }
+      catch (err) { alert("Could not read that file: " + err.message); }
+    };
+    input.click();
+  }
+});
+
+document.getElementById("list").addEventListener("click", e => {
+  const link = e.target.closest("[data-jump]");
+  if (link) { e.preventDefault(); history.replaceState(null, "", "#" + link.dataset.jump); jump(link.dataset.jump); }
+  if (e.target.id === "more") { state.limit += PAGE_SIZE; renderList(); }
+});
+document.getElementById("list").addEventListener("change", e => {
+  const id = e.target.dataset.status || e.target.dataset.note;
+  if (!id) return;
+  const entry = mine[id] || (mine[id] = {});
+  if (e.target.dataset.status) { entry.s = e.target.value; e.target.dataset.v = e.target.value; }
+  else entry.n = e.target.value;
+  if (!entry.s && !entry.n) delete mine[id];
+  save(); renderSide();
+});
+
+let timer;
+document.getElementById("q").addEventListener("input", e => {
+  clearTimeout(timer);
+  timer = setTimeout(() => { state.q = e.target.value.trim(); state.limit = PAGE_SIZE; renderList(); }, 120);
+});
+document.addEventListener("keydown", e => {
+  const q = document.getElementById("q");
+  if (e.key === "/" && document.activeElement.tagName !== "INPUT") { e.preventDefault(); q.focus(); q.select(); }
+  if (e.key === "Escape" && document.activeElement === q) { q.value = ""; state.q = ""; renderList(); q.blur(); }
+});
+window.addEventListener("hashchange", () => jump(location.hash.slice(1)));
+
+document.getElementById("release").textContent = `AUTOSAR CP ${DATA.meta.release} · ${REQS.length} items`;
+render();
+if (location.hash) jump(location.hash.slice(1));
+</script>
+</body>
+</html>

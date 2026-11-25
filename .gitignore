@@ -1,2 +1,7 @@
 /target
 .DS_Store
+
+# Specification PDFs and text extracted from them (copyrighted; keep local)
+/spec/
+/tools/.venv/
+__pycache__/
