@@ -12,3 +12,8 @@ qemu-system-arm \
   -nographic \
   -semihosting-config enable=on,target=native \
   -kernel"""
+
+[alias]
+# `cargo clippy --all-targets` would also try to build the test harness for
+# the bare-metal target, which has no `std`. Lint the library and the examples.
+lint = "clippy --workspace --lib --examples -- -D warnings"
