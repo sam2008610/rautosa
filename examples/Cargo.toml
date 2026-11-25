@@ -16,3 +16,7 @@ panic-semihosting.workspace = true
 [[example]]
 name = "hello"
 path = "hello.rs"
+
+[[example]]
+name = "systick"
+path = "systick.rs"
