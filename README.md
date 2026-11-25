@@ -42,7 +42,7 @@ machine and exits with code 0. If QEMU ever hangs, quit with `Ctrl-A`, `X`.
 | `cargo run --example <name>` | Run an example on QEMU |
 | `cargo lint` | Clippy on the kernel and all examples, warnings are errors |
 | `cargo fmt --all` | Format |
-| `cargo test -p rautosa-os --target "$(rustc -vV \| sed -n 's/^host: //p')"` | Run the kernel's unit tests on the host |
+| `cargo test-host` | Run the unit tests of the kernel and the exercises on the host |
 | `cargo doc -p rautosa-os --no-deps --open` | API documentation; search for a specification name such as `ActivateTask` |
 
 ## Layout
@@ -59,6 +59,7 @@ rautosa/
 │       └── kernel/                              scheduler, task state machine,
 │                                                context switch (empty)
 ├── examples/          programs that run on QEMU (hello, systick)
+├── exercises/         host-tested Rust warm-up exercises
 ├── docs/              roadmap, API checklist, design notes, exercises
 ├── tools/             specification requirement extractor
 └── spec/              specification PDFs and generated files (git-ignored)
@@ -115,6 +116,7 @@ do not publish them.
 - [`docs/roadmap.md`](docs/roadmap.md) — the four stages and their definitions of done
 - [`docs/sc1-api-checklist.md`](docs/sc1-api-checklist.md) — every SC1 service with its source
 - [`docs/design-notes.md`](docs/design-notes.md) — open design questions and decisions made
+- [`docs/exercise-00.md`](docs/exercise-00.md) — warm-up for C programmers: a ring buffer in Rust
 - [`docs/exercise-01.md`](docs/exercise-01.md) — warm-up: SysTick and shared state
 - [`docs/safety-practice.md`](docs/safety-practice.md) — proposal for practising ISO 26262-6 activities
 

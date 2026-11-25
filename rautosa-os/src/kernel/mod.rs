@@ -19,7 +19,7 @@
 //! Everything that does not touch registers can be unit-tested on your Mac:
 //!
 //! ```text
-//! cargo test -p rautosa-os --target "$(rustc -vV | sed -n 's/^host: //p')"
+//! cargo test-host
 //! ```
 //!
 //! Keeping hardware access behind a narrow interface in [`arch`] is what makes

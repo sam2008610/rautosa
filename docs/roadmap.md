@@ -28,7 +28,8 @@ search for the ID.
 - [x] Cargo workspace, pinned toolchain, QEMU runner.
 - [x] `cargo run --example hello` prints `Hello from Rautosa` and exits 0.
 - [x] `rautosa-os` API shell: idiomatic layer + `compat` layer, all `todo!()`.
-- [ ] `docs/exercise-01.md` solved (SysTick warm-up). **← you are here**
+- [ ] `docs/exercise-00.md` solved (Rust basics: a ring buffer, host-tested). **← you are here**
+- [ ] `docs/exercise-01.md` solved (SysTick and shared state).
 
 ---
 

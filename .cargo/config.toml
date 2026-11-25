@@ -17,3 +17,5 @@ qemu-system-arm \
 # `cargo clippy --all-targets` would also try to build the test harness for
 # the bare-metal target, which has no `std`. Lint the library and the examples.
 lint = "clippy --workspace --lib --examples -- -D warnings"
+# Unit tests run on the development machine, not on the target.
+test-host = "test --workspace --exclude rautosa-examples --target host-tuple --no-fail-fast"
