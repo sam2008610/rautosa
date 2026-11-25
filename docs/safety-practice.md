@@ -12,14 +12,10 @@ safety plan, confirmation measures performed with independence, and an item
 (or assumed item) with a hazard analysis behind it. Say "developed following
 selected ISO 26262-6 practices", never "certified" or "compliant".
 
-Two sourcing rules, same spirit as the rest of the project:
-
-- ISO 26262 is a paid, copyrighted standard. Reference clauses by number and
-  describe them in your own words; do not paste its text or tables into the
-  repository. Clause numbers below refer to the 2018 edition and were written
-  from memory — check them against your own copy before publishing.
-- Templates, checklists and work products from previous employers stay there.
-  Write every document from a blank page.
+One sourcing rule: ISO 26262 is a paid, copyrighted standard. Reference clauses
+by number and describe them in your own words; do not paste its text or tables
+into the repository. Clause numbers below refer to the 2018 edition and were
+written from memory — check them against your own copy before publishing.
 
 ## Recommended framing: a Safety Element out of Context
 
