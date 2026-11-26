@@ -61,7 +61,8 @@ rautosa/
 ├── examples/          programs that run on QEMU (hello, systick)
 ├── exercises/         host-tested Rust warm-up exercises
 ├── docs/              roadmap, API checklist, design notes, exercises
-├── tools/             specification requirement extractor
+├── requirements/      numbered requirements derived from OSEK OS
+├── tools/             requirement checker and specification browser
 └── spec/              specification PDFs and generated files (git-ignored)
 ```
 
@@ -93,12 +94,25 @@ AUTOSAR OS implementation. Source comments cite OSEK sections and
 `[SWS_Os_nnnnn]` requirement IDs so that every behaviour can be traced to its
 public source.
 
+### Requirements derived from OSEK OS
+
+OSEK OS has no numbered requirements, so Rautosa writes its own from the
+text, in its own words, under [`requirements/`](requirements). They get IDs
+such as `OSEK_ActivateTask_04`.
+[`docs/requirements-guide.md`](docs/requirements-guide.md) explains how one is
+written.
+
+```sh
+python3 tools/reqs.py          # check the requirement files (Python 3.11+)
+python3 tools/reqs.py --list   # and print them
+```
+
 ### Specification browser
 
 `tools/sws_extract.py` turns the SWS OS PDF into a searchable offline page
 listing every requirement with its section, upstream requirements,
 cross-references, roadmap stage and the places in this repository that cite
-it.
+it. The requirements derived from OSEK OS appear in the same page.
 
 ```sh
 mkdir -p spec    # put AUTOSAR_CP_SWS_OS.pdf here
@@ -116,6 +130,7 @@ do not publish them.
 - [`docs/roadmap.md`](docs/roadmap.md) — the four stages and their definitions of done
 - [`docs/sc1-api-checklist.md`](docs/sc1-api-checklist.md) — every SC1 service with its source
 - [`docs/design-notes.md`](docs/design-notes.md) — open design questions and decisions made
+- [`docs/requirements-guide.md`](docs/requirements-guide.md) — how to turn OSEK prose into numbered requirements
 - [`docs/exercise-00.md`](docs/exercise-00.md) — warm-up for C programmers: a ring buffer in Rust
 - [`docs/exercise-01.md`](docs/exercise-01.md) — warm-up: SysTick and shared state
 - [`docs/safety-practice.md`](docs/safety-practice.md) — proposal for practising ISO 26262-6 activities

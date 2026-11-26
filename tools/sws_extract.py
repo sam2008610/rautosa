@@ -19,6 +19,9 @@ do not commit or publish them. This script contains no specification text.
 
 The script also scans the repository for requirement IDs mentioned in Rust
 sources, so the viewer shows which requirements the code already refers to.
+
+Requirements that Rautosa derives itself from OSEK OS (requirements/, checked
+by tools/reqs.py) are shown in the same viewer, next to the AUTOSAR ones.
 """
 
 from __future__ import annotations
@@ -36,6 +39,8 @@ try:
     from pypdf import PdfReader
 except ImportError:  # pragma: no cover
     sys.exit("pypdf is missing: tools/.venv/bin/pip install pypdf")
+
+import reqs
 
 REPO = Path(__file__).resolve().parent.parent
 TEMPLATE = Path(__file__).with_name("sws_viewer.template.html")
@@ -335,7 +340,43 @@ def extract(pdf: Path) -> dict:
     }
 
 
-def scan_code_references(ids: set[str]) -> dict[str, list[str]]:
+def any_id(result: reqs.Result) -> re.Pattern:
+    """Matches AUTOSAR requirement IDs and the IDs of every derived document."""
+    return re.compile("|".join([REQ_ID.pattern] + [reqs.id_regex(d["prefix"]) for d in result.documents]))
+
+
+def derived_requirements(result: reqs.Result) -> list[dict]:
+    """Requirements from requirements/ in the shape the viewer expects."""
+    stages = {1: STAGE_1, 2: STAGE_2, 3: STAGE_3, 4: STAGE_4}
+    known = any_id(result)
+    converted = []
+    for r in result.requirements:
+        mentioned = set(known.findall(f'{r["text"]} {r["note"]}')) | set(r["see"])
+        converted.append({
+            "id": r["id"],
+            "doc": r["doc"],
+            "title": "",
+            "status": "Withdrawn" if r["withdrawn"] else "",
+            "kind": r["kind"].capitalize(),
+            "stage": stages[r["stage"]],
+            "section": r["section"],
+            "path": r["path"],
+            "page": r["page"],
+            "upstream": [],
+            "text": r["text"],
+            "tabular": False,
+            "refs": sorted(mentioned - {r["id"]}),
+            "where": r["where"],
+            "level": r["level"],
+            "verify": r["verify"],
+            "note": r["note"],
+            "see": r["see"],
+            "withdrawn": r["withdrawn"],
+        })
+    return converted
+
+
+def scan_code_references(ids: set[str], pattern: re.Pattern) -> dict[str, list[str]]:
     """Map requirement ID -> ["path:line", ...] for Rust sources in the repo."""
     found: dict[str, list[str]] = {}
     for path in sorted(REPO.rglob("*.rs")):
@@ -343,7 +384,7 @@ def scan_code_references(ids: set[str]) -> dict[str, list[str]]:
         if relative.parts[0] in {"target", "spec", "tools"}:
             continue
         for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
-            for req_id in set(REQ_ID.findall(line)):
+            for req_id in set(pattern.findall(line)):
                 if req_id in ids:
                     found.setdefault(req_id, []).append(f"{relative.as_posix()}:{number}")
     return found
@@ -356,8 +397,25 @@ def main() -> None:
     args = parser.parse_args()
 
     data = extract(args.pdf)
-    requirements = data["requirements"]
-    references = scan_code_references({r["id"] for r in requirements})
+    for requirement in data["requirements"]:
+        requirement["doc"] = "sws"
+    sws_count = len(data["requirements"])
+
+    derived = reqs.load()
+    for problem in derived.errors:
+        print(f"error: {problem}")
+    if derived.errors:
+        print("error: entries with errors are left out, run tools/reqs.py for details")
+    own = derived_requirements(derived)
+    data["requirements"] = requirements = own + data["requirements"]
+    data["meta"]["documents"] = [
+        {"key": d["key"], "title": d["title"], "short": d["short"], "derived": True,
+         "count": sum(r["doc"] == d["key"] for r in own)}
+        for d in derived.documents
+    ] + [{"key": "sws", "title": data["meta"]["document"],
+          "short": f'AUTOSAR SWS OS {data["meta"]["release"]}', "derived": False, "count": sws_count}]
+
+    references = scan_code_references({r["id"] for r in requirements}, any_id(derived))
     for requirement in requirements:
         requirement["code"] = references.get(requirement["id"], [])
 
@@ -373,7 +431,10 @@ def main() -> None:
         TEMPLATE.read_text(encoding="utf-8").replace("__SWS_DATA__", payload), encoding="utf-8"
     )
 
-    print(f"{len(requirements)} requirements from {args.pdf.name} ({data['meta']['release']})")
+    print(f"{sws_count} requirements from {args.pdf.name} ({data['meta']['release']})")
+    for document in data["meta"]["documents"]:
+        if document["derived"]:
+            print(f'{document["count"]} derived requirements for {document["short"]}')
     for stage in STAGE_ORDER:
         count = sum(r["stage"] == stage for r in requirements)
         if count:

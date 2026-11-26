@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SWS OS Requirements</title>
+<title>OS Requirements</title>
 <style>
 :root {
   --bg: #f6f5f1; --surface: #ffffff; --ink: #1d1c1a; --muted: #6d6961; --line: #e3e0d8;
@@ -93,6 +93,10 @@ mark { background: var(--mark); color: inherit; border-radius: 2px; }
 .mine select[data-v="done"] { color: var(--done); border-color: currentColor; }
 .mine select[data-v="doing"] { color: var(--doing); border-color: currentColor; }
 .mine select[data-v="todo"] { color: var(--todo); border-color: currentColor; }
+.rnote { margin: 8px 0 0; padding-left: 10px; border-left: 2px solid var(--line); color: var(--muted);
+  font-size: 13.5px; }
+.rnote b { font-weight: 600; }
+.chip.own { color: var(--accent); border-color: currentColor; }
 .empty { color: var(--muted); padding: 60px 0; text-align: center; }
 .more { display: block; margin: 16px auto; border: 1px solid var(--line); background: var(--surface);
   border-radius: 8px; padding: 8px 18px; cursor: pointer; }
@@ -107,7 +111,7 @@ mark { background: var(--mark); color: inherit; border-radius: 2px; }
 </head>
 <body>
 <div class="top">
-  <div class="brand">SWS OS Requirements<small id="release"></small></div>
+  <div class="brand">OS Requirements<small id="release"></small></div>
   <div class="search"><input id="q" type="search" placeholder="Search ID, text, service name…  (press /)" autocomplete="off"></div>
   <div class="count" id="count"></div>
 </div>
@@ -121,6 +125,9 @@ mark { background: var(--mark); color: inherit; border-radius: 2px; }
 const DATA = JSON.parse(document.getElementById("sws-data").textContent);
 const REQS = DATA.requirements;
 const BY_ID = new Map(REQS.map(r => [r.id, r]));
+const DOCS = DATA.meta.documents;
+const DOC = new Map(DOCS.map(d => [d.key, d]));
+const secKey = r => r.doc + "|" + r.section.number;
 const STAGES = DATA.meta.stages.filter(s => REQS.some(r => r.stage === s));
 const STAGE_COLOR = s => s.startsWith("Stage 1") ? "var(--s1)" : s.startsWith("Stage 2") ? "var(--s2)"
   : s.startsWith("Stage 3") ? "var(--s3)" : s.startsWith("Stage 4") ? "var(--s4)" : "var(--s0)";
@@ -132,7 +139,8 @@ let mine = {};
 try { mine = JSON.parse(localStorage.getItem(STORE_KEY) || "{}"); } catch (e) { /* storage unavailable */ }
 const save = () => { try { localStorage.setItem(STORE_KEY, JSON.stringify(mine)); } catch (e) { /* ignore */ } };
 
-const state = { q: "", stage: "", kind: "", section: "", trace: "", my: "", limit: PAGE_SIZE };
+const CLEAR = { q: "", doc: "", stage: "", kind: "", section: "", trace: "", my: "" };
+const state = { ...CLEAR, limit: PAGE_SIZE };
 
 const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const terms = () => state.q.toLowerCase().split(/\s+/).filter(Boolean);
@@ -142,23 +150,24 @@ function decorate(text) {
   let html = esc(text);
   const ts = terms().map(t => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
   if (ts.length) html = html.replace(new RegExp("(" + ts.join("|") + ")", "gi"), "<mark>$1</mark>");
-  return html.replace(/SWS_(?:<mark>)?Os(?:<\/mark>)?(?:_[A-Z]+)?_\d{5}/g, m => {
+  return html.replace(/SWS_(?:<mark>)?Os(?:<\/mark>)?(?:_[A-Z]+)?_\d{5}|\b[A-Z]+_[A-Z][A-Za-z0-9]*_\d{2,}\b/g, m => {
     const id = m.replace(/<\/?mark>/g, "");
     return BY_ID.has(id) ? `<a href="#${id}" data-jump="${id}">${m}</a>` : m;
   });
 }
 
 function matches(r) {
+  if (state.doc && r.doc !== state.doc) return false;
   if (state.stage && r.stage !== state.stage) return false;
   if (state.kind && r.kind !== state.kind) return false;
-  if (state.section && !(r.section.number === state.section || r.section.number.startsWith(state.section + "."))) return false;
+  if (state.section && !(secKey(r) === state.section || secKey(r).startsWith(state.section + "."))) return false;
   if (state.trace === "yes" && !r.code.length) return false;
   if (state.trace === "no" && r.code.length) return false;
   const status = (mine[r.id] || {}).s || "";
   if (state.my === "none" ? status : state.my && status !== state.my) return false;
   const ts = terms();
   if (ts.length) {
-    const hay = r._hay || (r._hay = [r.id, r.title, r.text, r.section.title, r.upstream.join(" "), r.code.join(" ")].join("\n").toLowerCase());
+    const hay = r._hay || (r._hay = [r.id, r.title, r.text, r.section.title, r.upstream.join(" "), r.code.join(" "), r.where || "", r.note || "", (r.see || []).join(" ")].join("\n").toLowerCase());
     if (!ts.every(t => hay.includes(t))) return false;
   }
   return true;
@@ -168,14 +177,24 @@ function card(r) {
   const my = mine[r.id] || {};
   const opts = STATUS.map(([v, l]) => `<option value="${v}"${v === (my.s || "") ? " selected" : ""}>${l}</option>`).join("");
   const foot = [];
+  const own = DOC.get(r.doc).derived;
+  const chips = [];
+  if (own) chips.push(`<span class="chip own" title="Written by Rautosa from ${esc(DOC.get(r.doc).title)}">${esc(DOC.get(r.doc).short)}</span>`);
+  if (r.level) chips.push(`<span class="chip">${r.level === "extended" ? "extended status only" : "standard and extended status"}</span>`);
+  if (own && r.verify !== "test") chips.push(`<span class="chip">verify by ${esc(r.verify)}</span>`);
+  let extra = "";
+  if (r.note) extra += `<p class="rnote"><b>Note</b> ${decorate(r.note)}</p>`;
+  if (r.withdrawn) extra += `<p class="rnote"><b>Withdrawn</b> ${decorate(r.withdrawn)}</p>`;
+  if (r.where) foot.push(`<span>From ${esc(r.where)}</span>`);
+  if (r.see && r.see.length) foot.push(`<span class="refs">See ${r.see.map(i => decorate(i)).join(" ")}</span>`);
   if (r.upstream.length) foot.push(`<span>Upstream ${r.upstream.map(u => `<code>${esc(u)}</code>`).join(" ")}</span>`);
   if (r.code.length) foot.push(`<span>Code ${r.code.map(c => `<code>${esc(c)}</code>`).join(" ")}</span>`);
   return `<article class="req" id="${r.id}" style="--stage:${STAGE_COLOR(r.stage)}">
 <header><a class="rid" href="#${r.id}" title="Link to this requirement">${decorate(r.id).replace(/<a [^>]*>|<\/a>/g, "")}</a>
 ${r.title ? `<span class="rtitle">${decorate(r.title)}</span>` : ""}
 <span class="chip stage">${esc(r.stage)}</span>${r.kind !== "Requirement" ? `<span class="chip">${esc(r.kind)}</span>` : ""}
-${r.status ? `<span class="chip">${esc(r.status)}</span>` : ""}<span class="page">p. ${r.page}</span></header>
-<div class="text${r.tabular ? " pre" : ""}">${decorate(r.text)}</div>
+${r.status ? `<span class="chip">${esc(r.status)}</span>` : ""}${chips.join("")}<span class="page">p. ${r.page}</span></header>
+<div class="text${r.tabular ? " pre" : ""}">${decorate(r.text)}</div>${extra}
 <footer>${foot.join("")}<span class="mine"><select data-status="${r.id}" data-v="${my.s || ""}" aria-label="My status">${opts}</select>
 <input data-note="${r.id}" value="${esc(my.n || "")}" placeholder="note / test name" aria-label="My note"></span></footer>
 </article>`;
@@ -186,9 +205,9 @@ function renderList() {
   const shown = hits.slice(0, state.limit);
   let html = "", last = "";
   for (const r of shown) {
-    if (r.section.number !== last) {
-      last = r.section.number;
-      const crumbs = r.path.slice(0, -1).map(p => esc(p.title)).join(" › ");
+    if (secKey(r) !== last) {
+      last = secKey(r);
+      const crumbs = [DOC.get(r.doc).short, ...r.path.slice(0, -1).map(p => p.title)].map(esc).join(" › ");
       html += `<h3>${crumbs ? crumbs + " › " : ""}<b>${esc(r.section.number)} ${esc(r.section.title)}</b></h3>`;
     }
     html += card(r);
@@ -206,7 +225,9 @@ function option(key, value, label, n, extra = "") {
 
 function renderSide() {
   const count = fn => REQS.filter(fn).length;
-  let html = "<h2>Roadmap stage</h2>";
+  let html = "<h2>Document</h2>";
+  for (const d of DOCS) html += option("doc", d.key, d.short + (d.derived ? " · derived" : ""), count(r => r.doc === d.key));
+  html += "<h2>Roadmap stage</h2>";
   for (const s of STAGES) {
     const all = REQS.filter(r => r.stage === s);
     const done = all.filter(r => ["done", "na"].includes((mine[r.id] || {}).s)).length;
@@ -223,23 +244,28 @@ function renderSide() {
   for (const [v, l] of STATUS.slice(1)) html += option("my", v, l, count(r => (mine[r.id] || {}).s === v));
   html += option("my", "none", "No status", count(r => !(mine[r.id] || {}).s));
   html += `<div class="tools"><button id="export">Export status</button><button id="import">Import status</button><button id="reset">Clear filters</button></div>`;
-  html += "<h2>Section</h2>";
-  const chapters = new Map();
-  for (const r of REQS) {
-    const top = r.path[0] || r.section, sub = group2(r);
-    if (!chapters.has(top.number)) chapters.set(top.number, { top, n: 0, subs: new Map() });
-    const c = chapters.get(top.number); c.n++;
-    if (sub.number !== top.number) {
-      if (!c.subs.has(sub.number)) c.subs.set(sub.number, { sub, n: 0 });
-      c.subs.get(sub.number).n++;
+  for (const d of DOCS) {
+    const chapters = new Map();
+    for (const r of REQS) {
+      if (r.doc !== d.key) continue;
+      const top = r.path[0] || r.section, sub = group2(r);
+      if (!chapters.has(top.number)) chapters.set(top.number, { top, n: 0, subs: new Map() });
+      const c = chapters.get(top.number); c.n++;
+      if (sub.number !== top.number) {
+        if (!c.subs.has(sub.number)) c.subs.set(sub.number, { sub, n: 0 });
+        c.subs.get(sub.number).n++;
+      }
+    }
+    if (!chapters.size) continue;
+    html += `<h2>Section · ${esc(d.short)}</h2>`;
+    for (const { top, n, subs } of chapters.values()) {
+      html += option("section", d.key + "|" + top.number, `${top.number} ${top.title}`, n);
+      for (const { sub, n: m } of subs.values()) html += option("section", d.key + "|" + sub.number, `${sub.number} ${sub.title}`, m, " sub");
     }
   }
-  for (const { top, n, subs } of chapters.values()) {
-    html += option("section", top.number, `${top.number} ${top.title}`, n);
-    for (const { sub, n: m } of subs.values()) html += option("section", sub.number, `${sub.number} ${sub.title}`, m, " sub");
-  }
   html += `<p class="note">${esc(DATA.meta.document)}, ${esc(DATA.meta.release)}. Extracted from <code>${esc(DATA.meta.source)}</code> on ${esc(DATA.meta.generated)}.<br><br>
-Requirement text © AUTOSAR, reproduced unmodified for informational purposes only. Keep this file local — do not publish it.
+AUTOSAR requirement text © AUTOSAR, reproduced unmodified for informational purposes only. Keep this file local — do not publish it.<br><br>
+Entries marked “derived” are Rautosa's own wording of a specification that has no numbered requirements; they come from <code>requirements/</code> in the repository.
 Stage labels and status tracking are Rautosa's own additions.</p>`;
   document.getElementById("side").innerHTML = html;
 }
@@ -249,7 +275,7 @@ function render() { renderSide(); renderList(); }
 function jump(id) {
   let el = document.getElementById(id);
   if (!el && BY_ID.has(id)) {
-    Object.assign(state, { q: "", stage: "", kind: "", section: "", trace: "", my: "", limit: REQS.length });
+    Object.assign(state, CLEAR, { limit: REQS.length });
     document.getElementById("q").value = "";
     render();
     el = document.getElementById(id);
@@ -269,7 +295,7 @@ document.getElementById("side").addEventListener("click", e => {
     return;
   }
   if (e.target.id === "reset") {
-    Object.assign(state, { q: "", stage: "", kind: "", section: "", trace: "", my: "", limit: PAGE_SIZE });
+    Object.assign(state, CLEAR, { limit: PAGE_SIZE });
     document.getElementById("q").value = ""; render();
   } else if (e.target.id === "export") {
     const blob = new Blob([JSON.stringify(mine, null, 1)], { type: "application/json" });
@@ -312,7 +338,7 @@ document.addEventListener("keydown", e => {
 });
 window.addEventListener("hashchange", () => jump(location.hash.slice(1)));
 
-document.getElementById("release").textContent = `AUTOSAR CP ${DATA.meta.release} · ${REQS.length} items`;
+document.getElementById("release").textContent = DOCS.map(d => `${d.short} · ${d.count}`).join("   ");
 render();
 if (location.hash) jump(location.hash.slice(1));
 </script>

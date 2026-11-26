@@ -1,0 +1,100 @@
+# Task management requirements derived from OSEK OS 2.2.3.
+#
+# How to write an entry: docs/requirements-guide.md
+# Check this file:       python3 tools/reqs.py
+#
+# Template (the first four keys are mandatory):
+#
+#   [[requirement]]
+#   id = "OSEK_<Topic>_<NN>"     # never renumber, never reuse
+#   text = "When <trigger>, the OS shall <one observable response>."
+#   source = "13.2.3.1"          # section number, see document.toml
+#   page = 50                    # page number printed on the page
+#   where = "Particularities"    # optional: which part of the section
+#   level = "extended"           # optional: error checked in extended status only
+#   kind = "constraint"          # optional: a duty of the application, not of the OS
+#   verify = "review"            # optional: default is "test"
+#   note = "..."                 # optional: your interpretation, or why it is worded this way
+#   see = ["SWS_Os_00001"]       # optional: related requirements
+
+# ---------------------------------------------------------------------------
+# 13.2.3.1 ActivateTask — worked example, see the guide for the reasoning.
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_ActivateTask_01"
+text = "When ActivateTask is called for a task in the suspended state, the OS shall move that task to the ready state."
+source = "13.2.3.1"
+page = 50
+where = "Description"
+
+[[requirement]]
+id = "OSEK_ActivateTask_02"
+text = "When a task that was activated from the suspended state enters the running state for the first time, the OS shall begin execution at the first statement of the task's entry function."
+source = "13.2.3.1"
+page = 50
+where = "Description"
+
+[[requirement]]
+id = "OSEK_ActivateTask_03"
+text = "When ActivateTask is called for a task that is not suspended and has not reached its configured activation limit, the OS shall record the activation without changing the state of that task."
+source = "13.2.3.1"
+page = 50
+where = "Footnote 14"
+note = "What the OS does with a recorded activation later is specified in section 4.3 and belongs to the requirements of that section."
+
+[[requirement]]
+id = "OSEK_ActivateTask_04"
+text = "If ActivateTask is called for a task that has already reached its configured activation limit, then ActivateTask shall return E_OS_LIMIT."
+source = "13.2.3.1"
+page = 50
+where = "Status"
+level = "standard"
+note = "An extended task has an activation limit of one, so this covers every extended task that is not suspended."
+
+[[requirement]]
+id = "OSEK_ActivateTask_05"
+text = "If ActivateTask returns E_OS_LIMIT, then the call shall leave the state and the recorded activations of every task unchanged."
+source = "13.2.3.1"
+page = 50
+where = "Particularities"
+
+[[requirement]]
+id = "OSEK_ActivateTask_06"
+text = "When ActivateTask moves an extended task from the suspended state to the ready state, the OS shall clear all events of that task."
+source = "13.2.3.1"
+page = 50
+where = "Particularities"
+
+[[requirement]]
+id = "OSEK_ActivateTask_07"
+text = "If ActivateTask is called with a task ID that does not identify a configured task, then ActivateTask shall return E_OS_ID."
+source = "13.2.3.1"
+page = 50
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_ActivateTask_08"
+text = "When ActivateTask completes without detecting an error, it shall return E_OK."
+source = "13.2.3.1"
+page = 50
+where = "Status"
+level = "standard"
+
+[[requirement]]
+id = "OSEK_ActivateTask_09"
+text = "The OS shall accept calls to ActivateTask from tasks and from category 2 interrupt service routines."
+source = "13.2.3.1"
+page = 50
+where = "Particularities, with Figure 12-1"
+
+# One sentence of the Particularities is deliberately not a requirement here:
+# the one saying that rescheduling after the call depends on where it was
+# called from. It promises nothing by itself; the behaviour it points to is
+# specified in sections 4.6.1 and 4.6.2 and is written down there.
+
+# ---------------------------------------------------------------------------
+# TODO(you): 4.3 Activating a task (multiple activation requests), then
+# 13.2.3.2 TerminateTask. Topics: OSEK_Activation_NN, OSEK_TerminateTask_NN.
+# ---------------------------------------------------------------------------
