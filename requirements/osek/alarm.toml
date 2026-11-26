@@ -133,6 +133,7 @@ source = "13.6.1"
 page = 62
 where = "AlarmBaseType"
 verify = "review"
+note = "The text says that mincycle exists only in systems with extended status."
 
 # ---------------------------------------------------------------------------
 # 13.6.2.1 DeclareAlarm
@@ -306,6 +307,13 @@ where = "Particularities"
 kind = "constraint"
 see = ["OSEK_SetRelAlarm_04"]
 
+[[requirement]]
+id = "OSEK_SetRelAlarm_11"
+text = "When SetRelAlarm succeeds, the named alarm shall be in use."
+source = "13.6.3.3"
+page = 64
+where = "Description"
+
 # ---------------------------------------------------------------------------
 # 13.6.3.4 SetAbsAlarm
 # ---------------------------------------------------------------------------
@@ -394,6 +402,13 @@ page = 65
 where = "Particularities"
 kind = "constraint"
 see = ["OSEK_SetAbsAlarm_05"]
+
+[[requirement]]
+id = "OSEK_SetAbsAlarm_12"
+text = "When SetAbsAlarm succeeds, the named alarm shall be in use."
+source = "13.6.3.4"
+page = 64
+where = "Description"
 
 # ---------------------------------------------------------------------------
 # 13.6.3.5 CancelAlarm

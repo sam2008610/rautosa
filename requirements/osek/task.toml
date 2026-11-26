@@ -127,7 +127,7 @@ text = "The OS shall serve the activations of tasks of the same priority in the 
 source = "4.3"
 page = 19
 where = "Multiple requesting of task activation"
-note = "This holds across tasks. If T1 is activated a second time and then T2 of the same priority is activated, the second instance of T1 runs before T2: the place in the order is taken when the activation is requested, not when the earlier instance terminates."
+note = "Interpretation: the text does not spell out how recorded activations relate to the order of the ready tasks. Read literally, the order holds across tasks. If T1 is activated a second time and then T2 of the same priority is activated, the second instance of T1 runs before T2: the place in the order is taken when the activation is requested, not when the earlier instance terminates."
 
 # ---------------------------------------------------------------------------
 # 4.5 Task priority

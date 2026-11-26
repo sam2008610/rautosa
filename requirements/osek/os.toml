@@ -241,6 +241,14 @@ where = "Footnote 11"
 note = "AUTOSAR also allows absolute autostart alarms."
 see = ["SWS_Os_00476"]
 
+[[requirement]]
+id = "OSEK_Startup_09"
+text = "During start-up, the OS shall set every counter to zero before it sets the autostart alarms."
+source = "11.3"
+page = 42
+where = "Footnote 11"
+note = "The text adds 'if possible' and excepts counters such as calendar timers."
+
 # ---------------------------------------------------------------------------
 # 11.5 Debugging
 # ---------------------------------------------------------------------------

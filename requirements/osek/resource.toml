@@ -25,6 +25,30 @@ page = 29
 where = "List of guarantees"
 verify = "analysis"
 
+[[requirement]]
+id = "OSEK_Resource_11"
+text = "The OS shall ensure that the use of resources causes no priority inversion."
+source = "8"
+page = 29
+where = "List of guarantees"
+verify = "analysis"
+note = "Priority inversion: a task is delayed by lower-priority tasks that do not share a resource with it. Section 8.5 gives the bound that remains: a task is delayed by lower-priority tasks for at most the time one of them occupies a resource."
+
+[[requirement]]
+id = "OSEK_Resource_12"
+text = "The OS shall ensure that the use of resources causes no deadlock."
+source = "8"
+page = 29
+where = "List of guarantees"
+verify = "analysis"
+
+[[requirement]]
+id = "OSEK_Resource_13"
+text = "Where resources are shared with interrupt service routines, the OS shall ensure that no two tasks or interrupt service routines occupy the same resource at the same time."
+source = "8"
+page = 29
+where = "List of guarantees"
+
 # ---------------------------------------------------------------------------
 # 8.1 Behaviour during access to occupied resources
 # ---------------------------------------------------------------------------
@@ -185,6 +209,13 @@ text = "Where resources are shared with interrupt service routines, when an inte
 source = "8.6"
 page = 32
 where = "Third list item"
+
+[[requirement]]
+id = "OSEK_Ceiling_11"
+text = "Where resources are shared with interrupt service routines, the ceiling priority of a resource shall be lower than the priority of every task and interrupt service routine that does not access the resource and has a higher priority than all those that access it."
+source = "8.6"
+page = 32
+where = "First list item"
 
 # ---------------------------------------------------------------------------
 # 8.7 Internal Resources

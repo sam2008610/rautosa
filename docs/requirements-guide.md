@@ -33,7 +33,8 @@ One file per topic:
 | `os.toml` | 3.2, 5, 11, 12, 13.1, 13.7, 13.8: conformance, application modes, start-up, shutdown, hooks, error handling |
 
 Chapter 10 (messages) belongs to OSEK COM and chapter 14 says of itself that
-it is not normative, so neither has requirements here.
+it is not normative, so neither has requirements here. Statements about a
+system where OSEK OS coexists with OSEKtime OS are left out as well.
 
 ## Terms
 
