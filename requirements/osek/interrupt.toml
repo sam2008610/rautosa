@@ -1,0 +1,288 @@
+# Interrupt requirements derived from OSEK OS 2.2.3
+# (section 3.1, chapter 6 and section 13.3).
+#
+# How to write an entry: docs/requirements-guide.md
+
+# ---------------------------------------------------------------------------
+# 3.1 Processing levels
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_Interrupt_01"
+text = "The OS shall give interrupt service routines precedence over all tasks."
+source = "3.1"
+page = 12
+where = "Priority rules"
+
+# ---------------------------------------------------------------------------
+# 6 Interrupt processing
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_Interrupt_02"
+text = "When a category 1 interrupt service routine finishes, the OS shall not perform rescheduling."
+source = "6"
+page = 25
+where = "ISR category 1"
+note = "Execution continues at the interrupted instruction: a category 1 interrupt has no influence on task management."
+
+[[requirement]]
+id = "OSEK_Interrupt_03"
+text = "The OS shall provide a frame for every category 2 interrupt service routine that prepares the run-time environment of the user routine."
+source = "6"
+page = 25
+where = "ISR category 2"
+verify = "review"
+
+[[requirement]]
+id = "OSEK_Interrupt_04"
+text = "The OS shall bind each category 2 user routine to its interrupt statically, at configuration time."
+source = "6"
+page = 25
+where = "ISR category 2"
+verify = "review"
+
+[[requirement]]
+id = "OSEK_Interrupt_05"
+text = "The OS shall allow interrupt service routines to interrupt non-preemptable tasks in the same way as preemptable tasks."
+source = "6"
+page = 26
+where = "Paragraph before Fast Disable/Enable API-functions"
+
+[[requirement]]
+id = "OSEK_Rescheduling_07"
+text = "When a category 2 interrupt service routine finishes while no other interrupt is active and the interrupted task is preemptable, the OS shall perform rescheduling before control returns to that task."
+source = "6"
+page = 25
+where = "Paragraph after Figure 6-1"
+note = "This is the item 'return from interrupt level to task level' of the list in section 4.6.1, with its conditions spelled out."
+
+[[requirement]]
+id = "OSEK_Interrupt_06"
+text = "A category 1 interrupt service routine shall call no system service other than the six services that enable, disable, suspend and resume interrupts."
+source = "6"
+page = 25
+where = "ISR category 1, with Footnote 8 and Figure 12-1"
+kind = "constraint"
+
+[[requirement]]
+id = "OSEK_Interrupt_07"
+text = "A task or interrupt service routine that has called a disable or suspend interrupt service shall call the matching enable or resume service before it ends."
+source = "6"
+page = 26
+where = "Fast Disable/Enable API-functions"
+kind = "constraint"
+see = ["SWS_Os_00368"]
+
+[[requirement]]
+id = "OSEK_Interrupt_08"
+text = "Between a suspend interrupt service and its matching resume service, the application shall call no system service other than further pairs of SuspendAllInterrupts and ResumeAllInterrupts or of SuspendOSInterrupts and ResumeOSInterrupts."
+source = "6"
+page = 26
+where = "Fast Disable/Enable API-functions"
+kind = "constraint"
+
+# ---------------------------------------------------------------------------
+# 13.3.2.1 EnableAllInterrupts
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_EnableAllInterrupts_01"
+text = "EnableAllInterrupts shall restore the interrupt state that the preceding call of DisableAllInterrupts saved."
+source = "13.3.2.1"
+page = 54
+where = "Description"
+
+[[requirement]]
+id = "OSEK_EnableAllInterrupts_02"
+text = "The OS shall accept calls to EnableAllInterrupts from tasks, category 1 and category 2 interrupt service routines."
+source = "13.3.2.1"
+page = 54
+where = "Particularities, with Figure 12-1"
+
+[[requirement]]
+id = "OSEK_EnableAllInterrupts_03"
+text = "The application shall call EnableAllInterrupts only after a preceding call of DisableAllInterrupts."
+source = "13.3.2.1"
+page = 54
+where = "Particularities"
+kind = "constraint"
+see = ["SWS_Os_00092"]
+
+# ---------------------------------------------------------------------------
+# 13.3.2.2 DisableAllInterrupts
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_DisableAllInterrupts_01"
+text = "DisableAllInterrupts shall disable all interrupts that the hardware allows to be disabled."
+source = "13.3.2.2"
+page = 55
+where = "Description"
+
+[[requirement]]
+id = "OSEK_DisableAllInterrupts_02"
+text = "DisableAllInterrupts shall save the interrupt state that was in effect before the call, for EnableAllInterrupts to restore."
+source = "13.3.2.2"
+page = 55
+where = "Description"
+
+[[requirement]]
+id = "OSEK_DisableAllInterrupts_03"
+text = "The OS shall accept calls to DisableAllInterrupts from tasks, category 1 and category 2 interrupt service routines."
+source = "13.3.2.2"
+page = 55
+where = "Particularities, with Figure 12-1"
+
+[[requirement]]
+id = "OSEK_DisableAllInterrupts_04"
+text = "The application shall not call DisableAllInterrupts again before the matching EnableAllInterrupts."
+source = "13.3.2.2"
+page = 55
+where = "Particularities"
+kind = "constraint"
+note = "This pair does not support nesting. The suspend and resume services do."
+
+[[requirement]]
+id = "OSEK_DisableAllInterrupts_05"
+text = "Between DisableAllInterrupts and EnableAllInterrupts, the application shall call no system service."
+source = "13.3.2.2"
+page = 55
+where = "Particularities"
+kind = "constraint"
+
+# ---------------------------------------------------------------------------
+# 13.3.2.3 ResumeAllInterrupts
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_ResumeAllInterrupts_01"
+text = "When ResumeAllInterrupts closes the outermost pair of nested SuspendAllInterrupts and ResumeAllInterrupts calls, it shall restore the interrupt recognition status saved by the first SuspendAllInterrupts."
+source = "13.3.2.3"
+page = 56
+where = "Particularities"
+
+[[requirement]]
+id = "OSEK_ResumeAllInterrupts_02"
+text = "When ResumeAllInterrupts closes a nested pair that is not the outermost, it shall leave the interrupt recognition status unchanged."
+source = "13.3.2.3"
+page = 56
+where = "Particularities"
+note = "Interpretation of the nesting rule: only the last ResumeAllInterrupts restores."
+
+[[requirement]]
+id = "OSEK_ResumeAllInterrupts_03"
+text = "The OS shall accept calls to ResumeAllInterrupts from tasks, category 1 and category 2 interrupt service routines, ErrorHook, PreTaskHook, PostTaskHook and alarm-callback routines."
+source = "13.3.2.3"
+page = 55
+where = "Particularities, with Figure 12-1"
+note = "The text of the section says that hook routines are excluded, but Figure 12-1 marks ErrorHook, PreTaskHook and PostTaskHook as allowed. This follows the figure."
+
+[[requirement]]
+id = "OSEK_ResumeAllInterrupts_04"
+text = "The application shall call ResumeAllInterrupts only after a preceding call of SuspendAllInterrupts."
+source = "13.3.2.3"
+page = 55
+where = "Particularities"
+kind = "constraint"
+see = ["SWS_Os_00092"]
+
+# ---------------------------------------------------------------------------
+# 13.3.2.4 SuspendAllInterrupts
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_SuspendAllInterrupts_01"
+text = "SuspendAllInterrupts shall disable all interrupts that the hardware allows to be disabled."
+source = "13.3.2.4"
+page = 56
+where = "Description"
+
+[[requirement]]
+id = "OSEK_SuspendAllInterrupts_02"
+text = "The first SuspendAllInterrupts of a nested sequence shall save the interrupt recognition status that was in effect before it."
+source = "13.3.2.4"
+page = 56
+where = "Description"
+note = "The nesting rule itself is stated under ResumeAllInterrupts."
+
+[[requirement]]
+id = "OSEK_SuspendAllInterrupts_03"
+text = "The OS shall accept calls to SuspendAllInterrupts from tasks, category 1 and category 2 interrupt service routines, ErrorHook, PreTaskHook, PostTaskHook and alarm-callback routines."
+source = "13.3.2.4"
+page = 56
+where = "Particularities, with Figure 12-1"
+note = "The text of the section says that hook routines are excluded, but Figure 12-1 marks ErrorHook, PreTaskHook and PostTaskHook as allowed. This follows the figure."
+
+# ---------------------------------------------------------------------------
+# 13.3.2.5 ResumeOSInterrupts
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_ResumeOSInterrupts_01"
+text = "When ResumeOSInterrupts closes the outermost pair of nested SuspendOSInterrupts and ResumeOSInterrupts calls, it shall restore the interrupt recognition status saved by the first SuspendOSInterrupts."
+source = "13.3.2.5"
+page = 57
+where = "Particularities"
+
+[[requirement]]
+id = "OSEK_ResumeOSInterrupts_02"
+text = "When ResumeOSInterrupts closes a nested pair that is not the outermost, it shall leave the interrupt recognition status unchanged."
+source = "13.3.2.5"
+page = 57
+where = "Particularities"
+note = "Interpretation of the nesting rule: only the last ResumeOSInterrupts restores."
+
+[[requirement]]
+id = "OSEK_ResumeOSInterrupts_03"
+text = "The OS shall accept calls to ResumeOSInterrupts from tasks, category 1 and category 2 interrupt service routines."
+source = "13.3.2.5"
+page = 56
+where = "Particularities, with Figure 12-1"
+
+[[requirement]]
+id = "OSEK_ResumeOSInterrupts_04"
+text = "The application shall call ResumeOSInterrupts only after a preceding call of SuspendOSInterrupts."
+source = "13.3.2.5"
+page = 56
+where = "Particularities"
+kind = "constraint"
+see = ["SWS_Os_00092"]
+
+# ---------------------------------------------------------------------------
+# 13.3.2.6 SuspendOSInterrupts
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_SuspendOSInterrupts_01"
+text = "SuspendOSInterrupts shall disable the recognition of category 2 interrupts."
+source = "13.3.2.6"
+page = 57
+where = "Description"
+note = "An implementation is free to disable more interrupts than category 2 if it cannot disable only those efficiently."
+
+[[requirement]]
+id = "OSEK_SuspendOSInterrupts_02"
+text = "The first SuspendOSInterrupts of a nested sequence shall save the recognition status of category 2 interrupts that was in effect before it."
+source = "13.3.2.6"
+page = 57
+where = "Description"
+note = "The nesting rule itself is stated under ResumeOSInterrupts."
+
+[[requirement]]
+id = "OSEK_SuspendOSInterrupts_03"
+text = "The OS shall accept calls to SuspendOSInterrupts from tasks, category 1 and category 2 interrupt service routines."
+source = "13.3.2.6"
+page = 57
+where = "Particularities, with Figure 12-1"
+
+# ---------------------------------------------------------------------------
+# 13.3.3 Naming convention
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_InterruptApi_01"
+text = "The OS shall let a category 2 interrupt service routine be defined as ISR(FuncName)."
+source = "13.3.3"
+page = 57
+verify = "review"

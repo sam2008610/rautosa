@@ -1,0 +1,464 @@
+# Counter and alarm requirements derived from OSEK OS 2.2.3
+# (chapter 9 and section 13.6).
+#
+# How to write an entry: docs/requirements-guide.md
+
+# ---------------------------------------------------------------------------
+# 9.1 Counters
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_Counter_01"
+text = "The OS shall provide at least one counter that is derived from a hardware or software timer."
+source = "9.1"
+page = 36
+where = "Paragraph 4"
+note = "Section 13.6.4 calls it the system counter."
+
+[[requirement]]
+id = "OSEK_Counter_02"
+text = "When a counter is advanced, the OS shall process the alarms attached to that counter."
+source = "9.1"
+page = 36
+where = "Paragraph 3"
+note = "OSEK defines no service to advance a counter. AUTOSAR adds IncrementCounter."
+see = ["SWS_Os_00399"]
+
+# ---------------------------------------------------------------------------
+# 9.2 Alarm management
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_Alarm_01"
+text = "The OS shall assign each alarm statically to exactly one counter."
+source = "9.2"
+page = 36
+where = "Static assignment list"
+verify = "review"
+
+[[requirement]]
+id = "OSEK_Alarm_02"
+text = "The OS shall assign each alarm statically to exactly one action: activating one task, setting one event of one task, or calling one alarm-callback routine."
+source = "9.2"
+page = 36
+where = "Static assignment list"
+verify = "review"
+
+[[requirement]]
+id = "OSEK_Alarm_03"
+text = "The OS shall allow more than one alarm to be attached to the same counter."
+source = "9.2"
+page = 36
+where = "Paragraph 4"
+
+[[requirement]]
+id = "OSEK_Alarm_04"
+text = "When an alarm configured to activate a task expires, the OS shall activate that task."
+source = "9.2"
+page = 36
+where = "Paragraph after the list"
+
+[[requirement]]
+id = "OSEK_Alarm_05"
+text = "When an alarm configured to set an event expires, the OS shall set that event for the configured task."
+source = "9.2"
+page = 36
+where = "Paragraph after the list"
+
+[[requirement]]
+id = "OSEK_Alarm_06"
+text = "When an alarm configured with an alarm-callback routine expires, the OS shall call that routine."
+source = "9.2"
+page = 36
+where = "Paragraph after the list"
+note = "AUTOSAR allows alarm callbacks in Scalability Class 1 only."
+see = ["SWS_Os_00242"]
+
+[[requirement]]
+id = "OSEK_Alarm_07"
+text = "While an alarm-callback routine executes, the OS shall keep category 2 interrupts disabled."
+source = "9.2"
+page = 36
+where = "Paragraph after the list"
+
+[[requirement]]
+id = "OSEK_Alarm_08"
+text = "When an expiring alarm activates a task, the OS shall apply the same rules as for an activation through ActivateTask."
+source = "9.2"
+page = 36
+where = "Paragraph after the list"
+
+[[requirement]]
+id = "OSEK_Alarm_09"
+text = "When an expiring alarm sets an event, the OS shall apply the same rules as for SetEvent."
+source = "9.2"
+page = 36
+where = "Paragraph after the list"
+
+[[requirement]]
+id = "OSEK_Alarm_10"
+text = "When an alarm that was set with a cycle of zero expires, the OS shall mark it as no longer in use."
+source = "9.2"
+page = 36
+where = "Paragraph 3"
+note = "Interpretation of 'single alarm': after it has expired, GetAlarm and CancelAlarm report that it is not in use, and it can be set again."
+
+# ---------------------------------------------------------------------------
+# 9.3 Alarm-callback routines
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_AlarmApi_07"
+text = "The OS shall let an alarm-callback routine be defined as ALARMCALLBACK(Name), with no parameter and no return value."
+source = "9.3"
+page = 37
+verify = "review"
+note = "The same pattern is given in section 13.6.5."
+
+# ---------------------------------------------------------------------------
+# 13.6.1 Data types
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_AlarmApi_01"
+text = "The OS shall provide the data types TickType, TickRefType, AlarmBaseType, AlarmBaseRefType and AlarmType."
+source = "13.6.1"
+page = 62
+verify = "review"
+
+[[requirement]]
+id = "OSEK_AlarmApi_02"
+text = "AlarmBaseType shall have the elements maxallowedvalue, ticksperbase and mincycle, each of type TickType."
+source = "13.6.1"
+page = 62
+where = "AlarmBaseType"
+verify = "review"
+
+# ---------------------------------------------------------------------------
+# 13.6.2.1 DeclareAlarm
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_AlarmApi_03"
+text = "The OS shall provide DeclareAlarm as an external declaration of an alarm."
+source = "13.6.2.1"
+page = 62
+where = "Description"
+verify = "review"
+
+# ---------------------------------------------------------------------------
+# 13.6.3.1 GetAlarmBase
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_GetAlarmBase_01"
+text = "GetAlarmBase shall store the characteristics of the counter of the named alarm in the structure referenced by Info."
+source = "13.6.3.1"
+page = 63
+where = "Description"
+
+[[requirement]]
+id = "OSEK_GetAlarmBase_02"
+text = "When GetAlarmBase completes without detecting an error, it shall return E_OK."
+source = "13.6.3.1"
+page = 63
+where = "Status"
+level = "standard"
+
+[[requirement]]
+id = "OSEK_GetAlarmBase_03"
+text = "If GetAlarmBase is called with an alarm ID that does not identify a configured alarm, then GetAlarmBase shall return E_OS_ID."
+source = "13.6.3.1"
+page = 63
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_GetAlarmBase_04"
+text = "The OS shall accept calls to GetAlarmBase from tasks, category 2 interrupt service routines, ErrorHook, PreTaskHook and PostTaskHook."
+source = "13.6.3.1"
+page = 63
+where = "Particularities, with Figure 12-1"
+
+# ---------------------------------------------------------------------------
+# 13.6.3.2 GetAlarm
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_GetAlarm_01"
+text = "GetAlarm shall store, in the variable referenced by Tick, the number of ticks that remain before the named alarm expires."
+source = "13.6.3.2"
+page = 63
+where = "Description"
+
+[[requirement]]
+id = "OSEK_GetAlarm_02"
+text = "When GetAlarm completes without detecting an error, it shall return E_OK."
+source = "13.6.3.2"
+page = 63
+where = "Status"
+level = "standard"
+
+[[requirement]]
+id = "OSEK_GetAlarm_03"
+text = "If GetAlarm is called for an alarm that is not in use, then GetAlarm shall return E_OS_NOFUNC."
+source = "13.6.3.2"
+page = 63
+where = "Status"
+level = "standard"
+
+[[requirement]]
+id = "OSEK_GetAlarm_04"
+text = "If GetAlarm is called with an alarm ID that does not identify a configured alarm, then GetAlarm shall return E_OS_ID."
+source = "13.6.3.2"
+page = 63
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_GetAlarm_05"
+text = "The OS shall accept calls to GetAlarm from tasks, category 2 interrupt service routines, ErrorHook, PreTaskHook and PostTaskHook."
+source = "13.6.3.2"
+page = 63
+where = "Particularities, with Figure 12-1"
+
+# ---------------------------------------------------------------------------
+# 13.6.3.3 SetRelAlarm
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_SetRelAlarm_01"
+text = "When SetRelAlarm succeeds, the OS shall expire the named alarm once the number of ticks given as increment has elapsed on its counter."
+source = "13.6.3.3"
+page = 64
+where = "Description"
+note = "The behaviour for an increment of zero is implementation specific in OSEK. AUTOSAR makes it an error."
+see = ["SWS_Os_00304"]
+
+[[requirement]]
+id = "OSEK_SetRelAlarm_02"
+text = "When an alarm that SetRelAlarm set with a cycle other than zero expires, the OS shall set it again to expire after the number of ticks given as cycle."
+source = "13.6.3.3"
+page = 64
+where = "Particularities"
+
+[[requirement]]
+id = "OSEK_SetRelAlarm_03"
+text = "When SetRelAlarm completes without detecting an error, it shall return E_OK."
+source = "13.6.3.3"
+page = 64
+where = "Status"
+level = "standard"
+
+[[requirement]]
+id = "OSEK_SetRelAlarm_04"
+text = "If SetRelAlarm is called for an alarm that is already in use, then SetRelAlarm shall return E_OS_STATE."
+source = "13.6.3.3"
+page = 64
+where = "Status"
+level = "standard"
+
+[[requirement]]
+id = "OSEK_SetRelAlarm_05"
+text = "If SetRelAlarm returns E_OS_STATE, then the call shall leave the alarm unchanged."
+source = "13.6.3.3"
+page = 64
+where = "Particularities"
+
+[[requirement]]
+id = "OSEK_SetRelAlarm_06"
+text = "If SetRelAlarm is called with an alarm ID that does not identify a configured alarm, then SetRelAlarm shall return E_OS_ID."
+source = "13.6.3.3"
+page = 64
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_SetRelAlarm_07"
+text = "If SetRelAlarm is called with an increment greater than maxallowedvalue of the counter, then SetRelAlarm shall return E_OS_VALUE."
+source = "13.6.3.3"
+page = 64
+where = "Status"
+level = "extended"
+note = "The text also names an increment lower than zero. TickType is unsigned in Rautosa, so that case does not arise."
+
+[[requirement]]
+id = "OSEK_SetRelAlarm_08"
+text = "If SetRelAlarm is called with a cycle that is not zero and is lower than mincycle or greater than maxallowedvalue of the counter, then SetRelAlarm shall return E_OS_VALUE."
+source = "13.6.3.3"
+page = 64
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_SetRelAlarm_09"
+text = "The OS shall accept calls to SetRelAlarm from tasks and from category 2 interrupt service routines."
+source = "13.6.3.3"
+page = 64
+where = "Particularities, with Figure 12-1"
+
+[[requirement]]
+id = "OSEK_SetRelAlarm_10"
+text = "The application shall cancel an alarm that is in use before it sets that alarm again."
+source = "13.6.3.3"
+page = 64
+where = "Particularities"
+kind = "constraint"
+see = ["OSEK_SetRelAlarm_04"]
+
+# ---------------------------------------------------------------------------
+# 13.6.3.4 SetAbsAlarm
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_SetAbsAlarm_01"
+text = "When SetAbsAlarm succeeds, the OS shall expire the named alarm when its counter reaches the value given as start."
+source = "13.6.3.4"
+page = 64
+where = "Description"
+
+[[requirement]]
+id = "OSEK_SetAbsAlarm_02"
+text = "When SetAbsAlarm is called with a start value that the counter has already reached, the OS shall expire the alarm only when the counter reaches that value again after its next overrun."
+source = "13.6.3.4"
+page = 65
+where = "Particularities"
+
+[[requirement]]
+id = "OSEK_SetAbsAlarm_03"
+text = "When an alarm that SetAbsAlarm set with a cycle other than zero expires, the OS shall set it again to expire after the number of ticks given as cycle."
+source = "13.6.3.4"
+page = 65
+where = "Particularities"
+
+[[requirement]]
+id = "OSEK_SetAbsAlarm_04"
+text = "When SetAbsAlarm completes without detecting an error, it shall return E_OK."
+source = "13.6.3.4"
+page = 65
+where = "Status"
+level = "standard"
+
+[[requirement]]
+id = "OSEK_SetAbsAlarm_05"
+text = "If SetAbsAlarm is called for an alarm that is already in use, then SetAbsAlarm shall return E_OS_STATE."
+source = "13.6.3.4"
+page = 65
+where = "Status"
+level = "standard"
+
+[[requirement]]
+id = "OSEK_SetAbsAlarm_06"
+text = "If SetAbsAlarm returns E_OS_STATE, then the call shall leave the alarm unchanged."
+source = "13.6.3.4"
+page = 65
+where = "Particularities"
+
+[[requirement]]
+id = "OSEK_SetAbsAlarm_07"
+text = "If SetAbsAlarm is called with an alarm ID that does not identify a configured alarm, then SetAbsAlarm shall return E_OS_ID."
+source = "13.6.3.4"
+page = 65
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_SetAbsAlarm_08"
+text = "If SetAbsAlarm is called with a start value greater than maxallowedvalue of the counter, then SetAbsAlarm shall return E_OS_VALUE."
+source = "13.6.3.4"
+page = 65
+where = "Status"
+level = "extended"
+note = "The text also names a start value lower than zero. TickType is unsigned in Rautosa, so that case does not arise."
+
+[[requirement]]
+id = "OSEK_SetAbsAlarm_09"
+text = "If SetAbsAlarm is called with a cycle that is not zero and is lower than mincycle or greater than maxallowedvalue of the counter, then SetAbsAlarm shall return E_OS_VALUE."
+source = "13.6.3.4"
+page = 65
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_SetAbsAlarm_10"
+text = "The OS shall accept calls to SetAbsAlarm from tasks and from category 2 interrupt service routines."
+source = "13.6.3.4"
+page = 65
+where = "Particularities, with Figure 12-1"
+
+[[requirement]]
+id = "OSEK_SetAbsAlarm_11"
+text = "The application shall cancel an alarm that is in use before it sets that alarm again."
+source = "13.6.3.4"
+page = 65
+where = "Particularities"
+kind = "constraint"
+see = ["OSEK_SetAbsAlarm_05"]
+
+# ---------------------------------------------------------------------------
+# 13.6.3.5 CancelAlarm
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_CancelAlarm_01"
+text = "When CancelAlarm succeeds, the named alarm shall no longer be in use."
+source = "13.6.3.5"
+page = 65
+where = "Description"
+note = "An alarm that is not in use does not expire."
+
+[[requirement]]
+id = "OSEK_CancelAlarm_02"
+text = "When CancelAlarm completes without detecting an error, it shall return E_OK."
+source = "13.6.3.5"
+page = 65
+where = "Status"
+level = "standard"
+
+[[requirement]]
+id = "OSEK_CancelAlarm_03"
+text = "If CancelAlarm is called for an alarm that is not in use, then CancelAlarm shall return E_OS_NOFUNC."
+source = "13.6.3.5"
+page = 65
+where = "Status"
+level = "standard"
+
+[[requirement]]
+id = "OSEK_CancelAlarm_04"
+text = "If CancelAlarm is called with an alarm ID that does not identify a configured alarm, then CancelAlarm shall return E_OS_ID."
+source = "13.6.3.5"
+page = 65
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_CancelAlarm_05"
+text = "The OS shall accept calls to CancelAlarm from tasks and from category 2 interrupt service routines."
+source = "13.6.3.5"
+page = 65
+where = "Particularities, with Figure 12-1"
+
+# ---------------------------------------------------------------------------
+# 13.6.4 Constants
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_AlarmApi_04"
+text = "The OS shall provide, for every counter x, the constants OSMAXALLOWEDVALUE_x, OSTICKSPERBASE_x and OSMINCYCLE_x with the values that GetAlarmBase reports for that counter."
+source = "13.6.4"
+page = 65
+verify = "review"
+
+[[requirement]]
+id = "OSEK_AlarmApi_05"
+text = "The OS shall provide the constants OSMAXALLOWEDVALUE, OSTICKSPERBASE and OSMINCYCLE for the system counter."
+source = "13.6.4"
+page = 66
+verify = "review"
+
+[[requirement]]
+id = "OSEK_AlarmApi_06"
+text = "The OS shall provide the constant OSTICKDURATION, the duration of one tick of the system counter in nanoseconds."
+source = "13.6.4"
+page = 66
+verify = "review"

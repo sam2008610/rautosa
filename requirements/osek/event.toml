@@ -1,0 +1,293 @@
+# Event requirements derived from OSEK OS 2.2.3 (chapter 7 and section 13.5).
+#
+# How to write an entry: docs/requirements-guide.md
+
+# ---------------------------------------------------------------------------
+# 7 Event mechanism
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_Event_01"
+text = "The OS shall assign every event to exactly one extended task, its owner."
+source = "7"
+page = 27
+where = "Paragraph 2"
+verify = "review"
+
+[[requirement]]
+id = "OSEK_Event_02"
+text = "When an extended task is activated by any means, the OS shall clear all events of that task."
+source = "7"
+page = 27
+where = "Paragraph 2"
+note = "OSEK_ActivateTask_06 and OSEK_ChainTask_07 state this for those two services. This one also covers activation by an alarm and by autostart."
+see = ["OSEK_ActivateTask_06", "OSEK_ChainTask_07"]
+
+# ---------------------------------------------------------------------------
+# 13.5.1 Data types
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_EventApi_01"
+text = "The OS shall provide the data types EventMaskType and EventMaskRefType."
+source = "13.5.1"
+page = 60
+verify = "review"
+
+# ---------------------------------------------------------------------------
+# 13.5.2.1 DeclareEvent
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_EventApi_02"
+text = "The OS shall provide DeclareEvent as an external declaration of an event."
+source = "13.5.2.1"
+page = 60
+where = "Description"
+verify = "review"
+
+# ---------------------------------------------------------------------------
+# 13.5.3.1 SetEvent
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_SetEvent_01"
+text = "SetEvent shall set, for the task named in the call, every event contained in the mask."
+source = "13.5.3.1"
+page = 60
+where = "Description"
+
+[[requirement]]
+id = "OSEK_SetEvent_02"
+text = "SetEvent shall leave every event that is not contained in the mask unchanged."
+source = "13.5.3.1"
+page = 60
+where = "Particularities"
+
+[[requirement]]
+id = "OSEK_SetEvent_03"
+text = "When SetEvent sets at least one event that the named task is waiting for, the OS shall move that task from the waiting state to the ready state."
+source = "13.5.3.1"
+page = 60
+where = "Description"
+see = ["OSEK_Priority_08", "OSEK_Rescheduling_05"]
+
+[[requirement]]
+id = "OSEK_SetEvent_04"
+text = "When SetEvent sets no event that the named task is waiting for, the OS shall leave the state of that task unchanged."
+source = "13.5.3.1"
+page = 60
+where = "Description"
+note = "The converse of OSEK_SetEvent_03, which the text implies with its 'if'."
+
+[[requirement]]
+id = "OSEK_SetEvent_05"
+text = "When SetEvent completes without detecting an error, it shall return E_OK."
+source = "13.5.3.1"
+page = 60
+where = "Status"
+level = "standard"
+
+[[requirement]]
+id = "OSEK_SetEvent_06"
+text = "If SetEvent is called with a task ID that does not identify a configured task, then SetEvent shall return E_OS_ID."
+source = "13.5.3.1"
+page = 60
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_SetEvent_07"
+text = "If SetEvent is called for a task that is not an extended task, then SetEvent shall return E_OS_ACCESS."
+source = "13.5.3.1"
+page = 60
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_SetEvent_08"
+text = "If SetEvent is called for a task that is in the suspended state, then SetEvent shall return E_OS_STATE."
+source = "13.5.3.1"
+page = 60
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_SetEvent_09"
+text = "The OS shall accept calls to SetEvent from tasks and from category 2 interrupt service routines."
+source = "13.5.3.1"
+page = 60
+where = "Description, with Figure 12-1"
+
+# ---------------------------------------------------------------------------
+# 13.5.3.2 ClearEvent
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_ClearEvent_01"
+text = "ClearEvent shall clear, for the calling task, every event contained in the mask."
+source = "13.5.3.2"
+page = 61
+where = "Description"
+
+[[requirement]]
+id = "OSEK_ClearEvent_02"
+text = "ClearEvent shall leave every event that is not contained in the mask unchanged."
+source = "13.5.3.2"
+page = 61
+where = "Description"
+note = "Interpretation of 'cleared according to the event mask'. The text states this explicitly only for SetEvent."
+
+[[requirement]]
+id = "OSEK_ClearEvent_03"
+text = "When ClearEvent completes without detecting an error, it shall return E_OK."
+source = "13.5.3.2"
+page = 61
+where = "Status"
+level = "standard"
+
+[[requirement]]
+id = "OSEK_ClearEvent_04"
+text = "If ClearEvent is called by a task that is not an extended task, then ClearEvent shall return E_OS_ACCESS."
+source = "13.5.3.2"
+page = 61
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_ClearEvent_05"
+text = "If ClearEvent is called at interrupt level, then ClearEvent shall return E_OS_CALLEVEL."
+source = "13.5.3.2"
+page = 61
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_ClearEvent_06"
+text = "The OS shall accept calls to ClearEvent from tasks only."
+source = "13.5.3.2"
+page = 61
+where = "Figure 12-1"
+
+# ---------------------------------------------------------------------------
+# 13.5.3.3 GetEvent
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_GetEvent_01"
+text = "GetEvent shall store, in the variable referenced by Event, the events that are currently set for the named task, regardless of which events that task is waiting for."
+source = "13.5.3.3"
+page = 61
+where = "Description"
+
+[[requirement]]
+id = "OSEK_GetEvent_02"
+text = "When GetEvent completes without detecting an error, it shall return E_OK."
+source = "13.5.3.3"
+page = 61
+where = "Status"
+level = "standard"
+
+[[requirement]]
+id = "OSEK_GetEvent_03"
+text = "If GetEvent is called with a task ID that does not identify a configured task, then GetEvent shall return E_OS_ID."
+source = "13.5.3.3"
+page = 61
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_GetEvent_04"
+text = "If GetEvent is called for a task that is not an extended task, then GetEvent shall return E_OS_ACCESS."
+source = "13.5.3.3"
+page = 61
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_GetEvent_05"
+text = "If GetEvent is called for a task that is in the suspended state, then GetEvent shall return E_OS_STATE."
+source = "13.5.3.3"
+page = 61
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_GetEvent_06"
+text = "The OS shall accept calls to GetEvent from tasks, category 2 interrupt service routines, ErrorHook, PreTaskHook and PostTaskHook."
+source = "13.5.3.3"
+page = 61
+where = "Description, with Figure 12-1"
+
+# ---------------------------------------------------------------------------
+# 13.5.3.4 WaitEvent
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_WaitEvent_01"
+text = "When WaitEvent is called while none of the events in the mask is set for the calling task, the OS shall move the calling task to the waiting state."
+source = "13.5.3.4"
+page = 61
+where = "Description"
+see = ["OSEK_Rescheduling_04"]
+
+[[requirement]]
+id = "OSEK_WaitEvent_02"
+text = "When WaitEvent is called while at least one of the events in the mask is already set for the calling task, the calling task shall stay in the running state."
+source = "13.5.3.4"
+page = 61
+where = "Description"
+
+[[requirement]]
+id = "OSEK_WaitEvent_03"
+text = "When WaitEvent is called while at least one of the events in the mask is already set for the calling task, the OS shall not perform rescheduling."
+source = "4.6.2"
+page = 22
+where = "Footnote 5"
+note = "This matters for a non-preemptable task or a task of a group: its internal resource is not released, so no other task gets to run."
+
+[[requirement]]
+id = "OSEK_WaitEvent_04"
+text = "When WaitEvent moves the calling task to the waiting state, the OS shall release the internal resource of that task."
+source = "13.5.3.4"
+page = 62
+where = "Particularities"
+
+[[requirement]]
+id = "OSEK_WaitEvent_05"
+text = "When WaitEvent completes without detecting an error, it shall return E_OK."
+source = "13.5.3.4"
+page = 62
+where = "Status"
+level = "standard"
+
+[[requirement]]
+id = "OSEK_WaitEvent_06"
+text = "If WaitEvent is called by a task that is not an extended task, then WaitEvent shall return E_OS_ACCESS."
+source = "13.5.3.4"
+page = 62
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_WaitEvent_07"
+text = "If WaitEvent is called while the calling task occupies a resource other than its internal resource, then WaitEvent shall return E_OS_RESOURCE."
+source = "13.5.3.4"
+page = 62
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_WaitEvent_08"
+text = "If WaitEvent is called at interrupt level, then WaitEvent shall return E_OS_CALLEVEL."
+source = "13.5.3.4"
+page = 62
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_WaitEvent_09"
+text = "The OS shall accept calls to WaitEvent from tasks only."
+source = "13.5.3.4"
+page = 61
+where = "Figure 12-1"

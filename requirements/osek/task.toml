@@ -1,4 +1,5 @@
-# Task management requirements derived from OSEK OS 2.2.3.
+# Task management requirements derived from OSEK OS 2.2.3
+# (chapter 4 and section 13.2).
 #
 # How to write an entry: docs/requirements-guide.md
 # Check this file:       python3 tools/reqs.py
@@ -18,7 +19,368 @@
 #   see = ["SWS_Os_00001"]       # optional: related requirements
 
 # ---------------------------------------------------------------------------
-# 13.2.3.1 ActivateTask — worked example, see the guide for the reasoning.
+# 4.1 Task concept
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_TaskType_01"
+text = "The OS shall support two types of task, basic tasks and extended tasks."
+source = "4.1"
+page = 16
+where = "Paragraph 2"
+verify = "review"
+
+[[requirement]]
+id = "OSEK_Idle_01"
+text = "While no task is in the running or ready state and no interrupt service routine is executing, the OS shall execute its idle mechanism."
+source = "4.1"
+page = 16
+where = "Paragraph 2"
+
+# ---------------------------------------------------------------------------
+# 4.2 Task state model
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_TaskState_06"
+text = "The OS shall change the state of a task only by the transitions activate, start, wait, release, preempt and terminate of the task state models."
+source = "4.2"
+page = 16
+where = "Figures 4-1 to 4-4"
+verify = "analysis"
+note = "In particular there is no transition from suspended to waiting, and no way to terminate a task that is not running."
+
+[[requirement]]
+id = "OSEK_TaskState_07"
+text = "When a task that was preempted or waiting enters the running state again, the OS shall continue it at the point where it left the running state."
+source = "4.2"
+page = 16
+where = "Paragraph 2"
+note = "Section 4.6.1 says the same for a preempted task: its context is saved so that it continues where it was preempted."
+
+# ---------------------------------------------------------------------------
+# 4.2.1 Extended tasks
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_TaskState_01"
+text = "The OS shall keep every extended task in exactly one of the states running, ready, waiting and suspended."
+source = "4.2.1"
+page = 16
+where = "State list"
+
+[[requirement]]
+id = "OSEK_TaskState_02"
+text = "The OS shall have at most one task in the running state at any time."
+source = "4.2.1"
+page = 16
+where = "State list"
+
+[[requirement]]
+id = "OSEK_TaskState_03"
+text = "When the scheduler selects a ready task for execution, the OS shall move that task to the running state."
+source = "4.2.1"
+page = 17
+where = "Figure 4-2, transition start"
+
+[[requirement]]
+id = "OSEK_TaskState_04"
+text = "When the scheduler decides to start another task while a task is running, the OS shall move the running task to the ready state."
+source = "4.2.1"
+page = 17
+where = "Figure 4-2, transition preempt"
+
+# ---------------------------------------------------------------------------
+# 4.2.2 Basic tasks
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_TaskState_05"
+text = "The OS shall keep every basic task in exactly one of the states running, ready and suspended."
+source = "4.2.2"
+page = 18
+where = "State list"
+
+# ---------------------------------------------------------------------------
+# 4.3 Activating a task
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_Activation_01"
+text = "The OS shall take the activation limit of each basic task from its static configuration."
+source = "4.3"
+page = 19
+where = "Multiple requesting of task activation"
+verify = "review"
+note = "Activation limit: the largest number of activations of one task that exist at the same time, counting the instance that is ready or running."
+
+[[requirement]]
+id = "OSEK_Activation_02"
+text = "The OS shall limit every extended task to a single activation at a time."
+source = "4.3"
+page = 19
+where = "Multiple requesting of task activation, with Figure 3-3"
+
+[[requirement]]
+id = "OSEK_Activation_03"
+text = "The OS shall serve the activations of tasks of the same priority in the order in which the activations were requested."
+source = "4.3"
+page = 19
+where = "Multiple requesting of task activation"
+note = "This holds across tasks. If T1 is activated a second time and then T2 of the same priority is activated, the second instance of T1 runs before T2: the place in the order is taken when the activation is requested, not when the earlier instance terminates."
+
+# ---------------------------------------------------------------------------
+# 4.5 Task priority
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_Priority_01"
+text = "The OS shall treat a larger priority number as a higher task priority, with 0 as the lowest priority."
+source = "4.5"
+page = 19
+where = "Paragraph 2"
+
+[[requirement]]
+id = "OSEK_Priority_02"
+text = "The OS shall provide no means of changing the configured priority of a task at run time."
+source = "4.5"
+page = 19
+where = "Paragraph 3"
+verify = "review"
+note = "The priority ceiling protocol changes the current priority of a task, not its configured priority."
+
+[[requirement]]
+id = "OSEK_Priority_03"
+text = "The OS shall allow more than one task to be configured with the same priority."
+source = "4.5"
+page = 19
+where = "Paragraph 4"
+verify = "review"
+
+[[requirement]]
+id = "OSEK_Priority_04"
+text = "When the scheduler selects the task to run, it shall choose among the tasks in the ready and running states one with the highest current priority."
+source = "4.5"
+page = 20
+where = "Fundamental steps"
+note = "Current priority: the configured priority of a task, or the ceiling priority it has been raised to while it holds a resource."
+
+[[requirement]]
+id = "OSEK_Priority_05"
+text = "When several tasks in the ready and running states share the highest current priority, the scheduler shall choose the oldest of them."
+source = "4.5"
+page = 20
+where = "Fundamental steps"
+note = "Interpretation: the running task is older than every ready task of the same priority, because it was started before them. This is why a task of equal priority does not preempt."
+
+[[requirement]]
+id = "OSEK_Priority_06"
+text = "The OS shall not let an extended task in the waiting state delay the start of ready tasks of the same priority."
+source = "4.5"
+page = 20
+where = "Paragraph 5"
+
+[[requirement]]
+id = "OSEK_Priority_07"
+text = "When a task is preempted, the OS shall treat it as the oldest of the ready tasks of its current priority."
+source = "4.5"
+page = 20
+where = "Paragraph 6"
+note = "Current priority, not configured priority: a task preempted while it holds a resource is placed at the ceiling priority it has at that moment."
+
+[[requirement]]
+id = "OSEK_Priority_08"
+text = "When a task is released from the waiting state, the OS shall treat it as the newest of the ready tasks of its priority."
+source = "4.5"
+page = 20
+where = "Paragraph 7"
+
+# ---------------------------------------------------------------------------
+# 4.6.1 Full preemptive scheduling
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_Preemption_01"
+text = "While a preemptable task is running, when a task with a higher priority than the current priority of the running task becomes ready, the OS shall preempt the running task before it executes further at task level."
+source = "4.6.1"
+page = 20
+where = "Paragraph 1"
+note = "Section 4.6.5 allows the switch to wait until a system service that is in progress has completed."
+
+[[requirement]]
+id = "OSEK_Preemption_02"
+text = "The OS shall not preempt the running task in favour of a ready task whose priority is equal to or lower than the current priority of the running task."
+source = "4.6.1"
+page = 20
+where = "Paragraph 1"
+note = "The text only states the positive case (a higher-priority task preempts). The negative case follows from OSEK_Priority_05 and from section 8.5, where tasks of lower or equal priority do not enter the running state."
+see = ["OSEK_Priority_05"]
+
+[[requirement]]
+id = "OSEK_Rescheduling_01"
+text = "When a task terminates successfully through TerminateTask, the OS shall perform rescheduling."
+source = "4.6.1"
+page = 21
+where = "List of rescheduling cases"
+note = "Rescheduling: the scheduler makes its selection (OSEK_Priority_04, OSEK_Priority_05) and switches tasks if the selected task is not the running one. This case is also in the list of section 4.6.2, so it holds for every task."
+
+[[requirement]]
+id = "OSEK_Rescheduling_02"
+text = "When a task terminates successfully through ChainTask, the OS shall perform rescheduling."
+source = "4.6.1"
+page = 21
+where = "List of rescheduling cases"
+note = "Also in the list of section 4.6.2, so it holds for every task."
+
+[[requirement]]
+id = "OSEK_Rescheduling_03"
+text = "While a preemptable task is running, when a task is activated at task level, the OS shall perform rescheduling before control returns to the running task."
+source = "4.6.1"
+page = 21
+where = "List of rescheduling cases"
+note = "Covers ActivateTask and an activation caused by an alarm that expires at task level."
+
+[[requirement]]
+id = "OSEK_Rescheduling_04"
+text = "When WaitEvent moves the calling task to the waiting state, the OS shall perform rescheduling."
+source = "4.6.1"
+page = 21
+where = "List of rescheduling cases"
+note = "Also in the list of section 4.6.2, so it holds for every extended task."
+
+[[requirement]]
+id = "OSEK_Rescheduling_05"
+text = "While a preemptable task is running, when an event set at task level releases a waiting task, the OS shall perform rescheduling before control returns to the running task."
+source = "4.6.1"
+page = 21
+where = "List of rescheduling cases"
+
+[[requirement]]
+id = "OSEK_Rescheduling_06"
+text = "While a preemptable task is running, when it releases a resource through ReleaseResource, the OS shall perform rescheduling before control returns to it."
+source = "4.6.1"
+page = 21
+where = "List of rescheduling cases"
+see = ["OSEK_Ceiling_08"]
+
+[[requirement]]
+id = "OSEK_Rescheduling_08"
+text = "While an interrupt service routine is active, the OS shall not perform rescheduling."
+source = "4.6.1"
+page = 21
+where = "Sentence after the list"
+note = "This includes nested interrupts: section 6 says a task activated from an interrupt service routine is scheduled only after all active interrupt service routines have ended."
+
+# ---------------------------------------------------------------------------
+# 4.6.2 Non preemptive scheduling
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_Rescheduling_09"
+text = "While a non-preemptable task is running, the OS shall perform rescheduling only when that task terminates successfully, calls Schedule, or enters the waiting state."
+source = "4.6.2"
+page = 22
+where = "Points of rescheduling"
+note = "Terminating covers TerminateTask and ChainTask. Activating a task, setting an event, releasing a resource and returning from an interrupt are therefore not rescheduling points for a non-preemptable task."
+
+# ---------------------------------------------------------------------------
+# 4.6.3 Groups of tasks
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_TaskGroup_01"
+text = "While a task of a group is running, the OS shall treat it as non-preemptable with respect to tasks whose priority is equal to or lower than the highest priority in the group."
+source = "4.6.3"
+page = 22
+where = "Paragraph 1"
+note = "A group is the set of tasks that share one internal resource, see OSEK_InternalResource_02."
+see = ["OSEK_InternalResource_02"]
+
+[[requirement]]
+id = "OSEK_TaskGroup_02"
+text = "While a task of a group is running, the OS shall treat it as preemptable with respect to tasks whose priority is higher than the highest priority in the group."
+source = "4.6.3"
+page = 22
+where = "Paragraph 1"
+
+# ---------------------------------------------------------------------------
+# 4.6.4 Mixed preemptive scheduling
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_Mixed_01"
+text = "The OS shall apply preemptive or non-preemptive scheduling according to the preemptability configured for the task that is currently running."
+source = "4.6.4"
+page = 23
+where = "Paragraph 1"
+
+# ---------------------------------------------------------------------------
+# 4.6.5 Selecting the scheduling policy
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_Mixed_02"
+text = "The OS shall allow the preemptability of a task to be configured independently of whether the task is basic or extended."
+source = "4.6.5"
+page = 23
+where = "Paragraph 2"
+verify = "review"
+
+# ---------------------------------------------------------------------------
+# 4.7 Termination of tasks
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_Termination_01"
+text = "The OS shall provide no service that terminates a task other than the calling task."
+source = "4.7"
+page = 23
+where = "Paragraph 1"
+verify = "review"
+
+[[requirement]]
+id = "OSEK_Termination_02"
+text = "Every task shall end its execution with a call to TerminateTask or ChainTask."
+source = "4.7"
+page = 23
+where = "Paragraph 3"
+kind = "constraint"
+note = "OSEK leaves the behaviour undefined if a task function simply returns. AUTOSAR defines it."
+see = ["SWS_Os_00052", "SWS_Os_00069"]
+
+[[requirement]]
+id = "OSEK_ChainTask_04"
+text = "When ChainTask activates a task, the OS shall treat that task as the newest of the ready tasks of its priority."
+source = "4.7"
+page = 23
+where = "Paragraph 2"
+note = "This also holds when a task chains itself."
+
+# ---------------------------------------------------------------------------
+# 13.2.1 Data types
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_TaskApi_01"
+text = "The OS shall provide the data types TaskType, TaskRefType, TaskStateType and TaskStateRefType."
+source = "13.2.1"
+page = 49
+verify = "review"
+
+# ---------------------------------------------------------------------------
+# 13.2.2.1 DeclareTask
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_TaskApi_02"
+text = "The OS shall provide DeclareTask as an external declaration of a task."
+source = "13.2.2.1"
+page = 50
+where = "Description"
+verify = "review"
+
+# ---------------------------------------------------------------------------
+# 13.2.3.1 ActivateTask — worked example, see the guide for the reasoning
 # ---------------------------------------------------------------------------
 
 [[requirement]]
@@ -42,6 +404,7 @@ source = "13.2.3.1"
 page = 50
 where = "Footnote 14"
 note = "What the OS does with a recorded activation later is specified in section 4.3 and belongs to the requirements of that section."
+see = ["OSEK_Activation_03", "OSEK_TerminateTask_02"]
 
 [[requirement]]
 id = "OSEK_ActivateTask_04"
@@ -92,9 +455,366 @@ where = "Particularities, with Figure 12-1"
 # One sentence of the Particularities is deliberately not a requirement here:
 # the one saying that rescheduling after the call depends on where it was
 # called from. It promises nothing by itself; the behaviour it points to is
-# specified in sections 4.6.1 and 4.6.2 and is written down there.
+# written down as OSEK_Rescheduling_03, _08 and _09.
 
 # ---------------------------------------------------------------------------
-# TODO(you): 4.3 Activating a task (multiple activation requests), then
-# 13.2.3.2 TerminateTask. Topics: OSEK_Activation_NN, OSEK_TerminateTask_NN.
+# 13.2.3.2 TerminateTask
 # ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_TerminateTask_01"
+text = "When TerminateTask succeeds and no further activation of the calling task is recorded, the OS shall move the calling task to the suspended state."
+source = "13.2.3.2"
+page = 51
+where = "Description"
+
+[[requirement]]
+id = "OSEK_TerminateTask_02"
+text = "When TerminateTask succeeds while a further activation of the calling task is recorded, the OS shall make the task ready again for its next instance."
+source = "13.2.3.2"
+page = 51
+where = "Footnote 15"
+note = "The next instance starts at the first statement. Its place among the ready tasks follows OSEK_Activation_03."
+see = ["OSEK_Activation_03"]
+
+[[requirement]]
+id = "OSEK_TerminateTask_03"
+text = "When TerminateTask succeeds, the OS shall release the internal resource assigned to the calling task."
+source = "13.2.3.2"
+page = 51
+where = "Particularities"
+
+[[requirement]]
+id = "OSEK_TerminateTask_04"
+text = "When TerminateTask succeeds, it shall not return to the calling task."
+source = "13.2.3.2"
+page = 51
+where = "Particularities"
+
+[[requirement]]
+id = "OSEK_TerminateTask_05"
+text = "If TerminateTask is called while the calling task occupies a resource other than its internal resource, then TerminateTask shall return E_OS_RESOURCE."
+source = "13.2.3.2"
+page = 51
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_TerminateTask_06"
+text = "If TerminateTask is called at interrupt level, then TerminateTask shall return E_OS_CALLEVEL."
+source = "13.2.3.2"
+page = 51
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_TerminateTask_07"
+text = "If TerminateTask detects an error, then it shall return to its caller without terminating any task."
+source = "13.2.3.2"
+page = 51
+where = "Particularities"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_TerminateTask_08"
+text = "A task shall release every resource it occupies, other than its internal resource, before it calls TerminateTask."
+source = "13.2.3.2"
+page = 51
+where = "Particularities"
+kind = "constraint"
+note = "In standard status the behaviour is undefined if it does not. In extended status the OS reports it, see OSEK_TerminateTask_05."
+see = ["OSEK_TerminateTask_05"]
+
+[[requirement]]
+id = "OSEK_TerminateTask_09"
+text = "The OS shall accept calls to TerminateTask from tasks only."
+source = "13.2.3.2"
+page = 51
+where = "Figure 12-1"
+
+# Rescheduling after a successful call is OSEK_Rescheduling_01. Ending a task
+# function without TerminateTask or ChainTask is OSEK_Termination_02.
+
+# ---------------------------------------------------------------------------
+# 13.2.3.3 ChainTask
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_ChainTask_01"
+text = "When ChainTask succeeds, the OS shall terminate the calling task."
+source = "13.2.3.3"
+page = 51
+where = "Description"
+
+[[requirement]]
+id = "OSEK_ChainTask_02"
+text = "When ChainTask succeeds, the OS shall activate the task named in the call after the calling task has been terminated."
+source = "13.2.3.3"
+page = 51
+where = "Description"
+
+[[requirement]]
+id = "OSEK_ChainTask_03"
+text = "When ChainTask names the calling task itself, the OS shall make that task ready again without counting an additional activation."
+source = "13.2.3.3"
+page = 51
+where = "Particularities"
+note = "The task does not pass through the suspended state."
+
+[[requirement]]
+id = "OSEK_ChainTask_05"
+text = "When ChainTask succeeds, the OS shall release the internal resource assigned to the calling task, also when the task chains itself."
+source = "13.2.3.3"
+page = 51
+where = "Particularities"
+
+[[requirement]]
+id = "OSEK_ChainTask_06"
+text = "When ChainTask succeeds, it shall not return to the calling task."
+source = "13.2.3.3"
+page = 52
+where = "Particularities"
+
+[[requirement]]
+id = "OSEK_ChainTask_07"
+text = "When ChainTask moves an extended task from the suspended state to the ready state, the OS shall clear all events of that task."
+source = "13.2.3.3"
+page = 52
+where = "Particularities"
+
+[[requirement]]
+id = "OSEK_ChainTask_08"
+text = "If ChainTask names a task other than the caller that has already reached its configured activation limit, then ChainTask shall return E_OS_LIMIT."
+source = "13.2.3.3"
+page = 52
+where = "Status"
+level = "standard"
+note = "Interpretation: other than the caller, because chaining to itself never counts an additional activation (OSEK_ChainTask_03)."
+
+[[requirement]]
+id = "OSEK_ChainTask_09"
+text = "If ChainTask returns E_OS_LIMIT, then the call shall leave the state and the recorded activations of every task unchanged."
+source = "13.2.3.3"
+page = 52
+where = "Particularities"
+note = "So the calling task is not terminated either."
+
+[[requirement]]
+id = "OSEK_ChainTask_10"
+text = "If ChainTask is called with a task ID that does not identify a configured task, then ChainTask shall return E_OS_ID."
+source = "13.2.3.3"
+page = 52
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_ChainTask_11"
+text = "If ChainTask is called while the calling task occupies a resource other than its internal resource, then ChainTask shall return E_OS_RESOURCE."
+source = "13.2.3.3"
+page = 52
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_ChainTask_12"
+text = "If ChainTask is called at interrupt level, then ChainTask shall return E_OS_CALLEVEL."
+source = "13.2.3.3"
+page = 52
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_ChainTask_13"
+text = "If ChainTask detects an error, then it shall return to its caller without terminating any task."
+source = "13.2.3.3"
+page = 52
+where = "Particularities"
+
+[[requirement]]
+id = "OSEK_ChainTask_14"
+text = "A task shall release every resource it occupies, other than its internal resource, before it calls ChainTask."
+source = "13.2.3.3"
+page = 52
+where = "Particularities"
+kind = "constraint"
+note = "In standard status the behaviour is undefined if it does not. In extended status the OS reports it, see OSEK_ChainTask_11."
+see = ["OSEK_ChainTask_11"]
+
+[[requirement]]
+id = "OSEK_ChainTask_15"
+text = "The OS shall accept calls to ChainTask from tasks only."
+source = "13.2.3.3"
+page = 51
+where = "Figure 12-1"
+
+# Rescheduling after a successful call is OSEK_Rescheduling_02.
+
+# ---------------------------------------------------------------------------
+# 13.2.3.4 Schedule
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_Schedule_01"
+text = "When Schedule is called while a ready task has a higher priority than the configured priority of the calling task, the OS shall preempt the calling task in favour of the highest-priority ready task."
+source = "13.2.3.4"
+page = 52
+where = "Description"
+note = "The caller gives up its internal resource for this decision, so its configured priority is what counts. The text does not say where the caller is placed among the ready tasks. As a preempted task it becomes the oldest of its priority (OSEK_Priority_07)."
+see = ["OSEK_Priority_07"]
+
+[[requirement]]
+id = "OSEK_Schedule_02"
+text = "When Schedule is called while no ready task has a higher priority than the configured priority of the calling task, Schedule shall return without a task switch."
+source = "13.2.3.4"
+page = 52
+where = "Description"
+
+[[requirement]]
+id = "OSEK_Schedule_03"
+text = "When Schedule preempts the calling task, the OS shall release the internal resource of the calling task."
+source = "13.2.3.4"
+page = 52
+where = "Description"
+
+[[requirement]]
+id = "OSEK_Schedule_04"
+text = "When Schedule returns to a task that has an internal resource, that task shall hold its internal resource again."
+source = "13.2.3.4"
+page = 52
+where = "Particularities"
+
+[[requirement]]
+id = "OSEK_Schedule_05"
+text = "When Schedule is called by a task that has no internal resource, it shall change the state of no task."
+source = "13.2.3.4"
+page = 52
+where = "Particularities"
+note = "A non-preemptable task counts as a task with an internal resource (footnote 16), so this is about preemptable tasks outside any group."
+
+[[requirement]]
+id = "OSEK_Schedule_06"
+text = "When Schedule completes without detecting an error, it shall return E_OK."
+source = "13.2.3.4"
+page = 53
+where = "Status"
+level = "standard"
+
+[[requirement]]
+id = "OSEK_Schedule_07"
+text = "If Schedule is called at interrupt level, then Schedule shall return E_OS_CALLEVEL."
+source = "13.2.3.4"
+page = 53
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_Schedule_08"
+text = "If Schedule is called while the calling task occupies a resource other than its internal resource, then Schedule shall return E_OS_RESOURCE."
+source = "13.2.3.4"
+page = 53
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_Schedule_09"
+text = "The OS shall accept calls to Schedule from tasks only."
+source = "13.2.3.4"
+page = 52
+where = "Figure 12-1"
+
+# ---------------------------------------------------------------------------
+# 13.2.3.5 GetTaskID
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_GetTaskID_01"
+text = "When GetTaskID is called while a task is in the running state, it shall store the ID of that task in the variable referenced by TaskID."
+source = "13.2.3.5"
+page = 53
+where = "Description"
+note = "Called from an interrupt service routine, this is the interrupted task."
+
+[[requirement]]
+id = "OSEK_GetTaskID_02"
+text = "When GetTaskID is called while no task is in the running state, it shall store INVALID_TASK in the variable referenced by TaskID."
+source = "13.2.3.5"
+page = 53
+where = "Particularities"
+
+[[requirement]]
+id = "OSEK_GetTaskID_03"
+text = "GetTaskID shall return E_OK."
+source = "13.2.3.5"
+page = 53
+where = "Status"
+level = "standard"
+
+[[requirement]]
+id = "OSEK_GetTaskID_04"
+text = "The OS shall accept calls to GetTaskID from tasks, category 2 interrupt service routines, ErrorHook, PreTaskHook and PostTaskHook."
+source = "13.2.3.5"
+page = 53
+where = "Particularities, with Figure 12-1"
+
+# ---------------------------------------------------------------------------
+# 13.2.3.6 GetTaskState
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_GetTaskState_01"
+text = "GetTaskState shall store the state that the named task has at the time of the call in the variable referenced by State."
+source = "13.2.3.6"
+page = 53
+where = "Description"
+
+[[requirement]]
+id = "OSEK_GetTaskState_02"
+text = "When GetTaskState is called for a task that has several activations of which one is running, it shall report the state running."
+source = "13.2.3.6"
+page = 53
+where = "Particularities"
+
+[[requirement]]
+id = "OSEK_GetTaskState_03"
+text = "When GetTaskState completes without detecting an error, it shall return E_OK."
+source = "13.2.3.6"
+page = 53
+where = "Status"
+level = "standard"
+
+[[requirement]]
+id = "OSEK_GetTaskState_04"
+text = "If GetTaskState is called with a task ID that does not identify a configured task, then GetTaskState shall return E_OS_ID."
+source = "13.2.3.6"
+page = 53
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_GetTaskState_05"
+text = "The OS shall accept calls to GetTaskState from tasks, category 2 interrupt service routines, ErrorHook, PreTaskHook and PostTaskHook."
+source = "13.2.3.6"
+page = 53
+where = "Particularities, with Figure 12-1"
+
+# ---------------------------------------------------------------------------
+# 13.2.4 Constants
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_TaskApi_03"
+text = "The OS shall provide the task state constants RUNNING, WAITING, READY and SUSPENDED and the task constant INVALID_TASK."
+source = "13.2.4"
+page = 54
+verify = "review"
+
+# ---------------------------------------------------------------------------
+# 13.2.5 Naming convention
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_TaskApi_04"
+text = "The OS shall let a task function be defined as TASK(TaskName), with TaskName also identifying the task."
+source = "13.2.5"
+page = 54
+verify = "review"

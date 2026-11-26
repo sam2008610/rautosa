@@ -1,0 +1,452 @@
+# Requirements on conformance, application modes, start-up, shutdown, hook
+# routines and error handling, derived from OSEK OS 2.2.3
+# (section 3.2, chapters 5, 11 and 12, sections 13.1, 13.7 and 13.8).
+#
+# How to write an entry: docs/requirements-guide.md
+
+# ---------------------------------------------------------------------------
+# 3.2 Conformance classes
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_Conformance_01"
+text = "The OS shall support at least 16 tasks that are not in the suspended state at the same time."
+source = "3.2"
+page = 14
+where = "Figure 3-3"
+verify = "analysis"
+note = "Minimum of conformance class ECC2 in Figure 3-3. It assumes that Rautosa aims at ECC2, the class that contains all others."
+
+[[requirement]]
+id = "OSEK_Conformance_02"
+text = "The OS shall support at least 16 task priorities."
+source = "3.2"
+page = 14
+where = "Figure 3-3"
+verify = "analysis"
+note = "Minimum of conformance class ECC2 in Figure 3-3. It assumes that Rautosa aims at ECC2, the class that contains all others."
+
+[[requirement]]
+id = "OSEK_Conformance_03"
+text = "The OS shall support at least 8 events for each extended task."
+source = "3.2"
+page = 14
+where = "Figure 3-3"
+verify = "analysis"
+note = "Minimum of conformance class ECC2 in Figure 3-3. It assumes that Rautosa aims at ECC2, the class that contains all others."
+
+[[requirement]]
+id = "OSEK_Conformance_04"
+text = "The OS shall support at least 8 resources, counting RES_SCHEDULER."
+source = "3.2"
+page = 14
+where = "Figure 3-3"
+verify = "analysis"
+note = "Minimum of conformance class ECC2 in Figure 3-3. It assumes that Rautosa aims at ECC2, the class that contains all others."
+
+[[requirement]]
+id = "OSEK_Conformance_05"
+text = "The OS shall support at least 2 internal resources."
+source = "3.2"
+page = 14
+where = "Figure 3-3"
+verify = "analysis"
+note = "Minimum of conformance class ECC2 in Figure 3-3. It assumes that Rautosa aims at ECC2, the class that contains all others."
+
+[[requirement]]
+id = "OSEK_Conformance_06"
+text = "The OS shall support at least 1 alarm."
+source = "3.2"
+page = 14
+where = "Figure 3-3"
+verify = "analysis"
+note = "Minimum of conformance class ECC2 in Figure 3-3. It assumes that Rautosa aims at ECC2, the class that contains all others."
+
+# ---------------------------------------------------------------------------
+# 5 Application modes
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_AppMode_01"
+text = "The OS shall support at least one application mode."
+source = "5"
+page = 24
+where = "Paragraph 1"
+verify = "review"
+
+[[requirement]]
+id = "OSEK_AppMode_02"
+text = "The OS shall provide no means of changing the application mode after it has been started."
+source = "5"
+page = 24
+where = "Paragraph 1"
+verify = "review"
+
+# ---------------------------------------------------------------------------
+# 11.1 Hook routines
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_Hook_01"
+text = "While a hook routine executes, the OS shall not let any task run."
+source = "11.1"
+page = 39
+where = "List of properties"
+note = "The text says that hook routines have a higher priority than all tasks."
+
+[[requirement]]
+id = "OSEK_Hook_02"
+text = "While a hook routine executes, the OS shall not let a category 2 interrupt service routine interrupt it."
+source = "11.1"
+page = 39
+where = "List of properties"
+
+[[requirement]]
+id = "OSEK_Hook_03"
+text = "The OS shall let each hook routine be switched on or off by configuration."
+source = "11.1"
+page = 39
+where = "List of properties"
+verify = "review"
+
+[[requirement]]
+id = "OSEK_Hook_04"
+text = "A hook routine shall call only the system services that Figure 12-1 allows for that hook."
+source = "11.1"
+page = 39
+where = "List of properties"
+kind = "constraint"
+note = "The behaviour is undefined otherwise."
+
+# ---------------------------------------------------------------------------
+# 11.2 Error handling
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_Error_01"
+text = "The OS shall provide two levels of error checking, standard status and extended status."
+source = "11.2"
+page = 40
+where = "General remarks"
+verify = "review"
+
+[[requirement]]
+id = "OSEK_Error_02"
+text = "If the OS detects that its internal data is no longer consistent, then it shall call ShutdownOS."
+source = "11.2"
+page = 40
+where = "Fatal errors"
+verify = "review"
+see = ["OSEK_ShutdownOS_03"]
+
+[[requirement]]
+id = "OSEK_ErrorHook_01"
+text = "Where ErrorHook is configured, when a system service returns a status other than E_OK, the OS shall call ErrorHook with that status before the service returns to its caller."
+source = "11.2"
+page = 40
+where = "Error hook routine"
+note = "Section 13.8.2.1 says the same: at the end of the service, before returning to task level."
+
+[[requirement]]
+id = "OSEK_ErrorHook_02"
+text = "The OS shall not call ErrorHook for a system service that was called from within ErrorHook."
+source = "11.2"
+page = 40
+where = "Error hook routine"
+
+[[requirement]]
+id = "OSEK_ErrorHook_03"
+text = "Where ErrorHook is configured, when an expiring alarm fails to activate its task or to set its event, the OS shall call ErrorHook."
+source = "11.2"
+page = 40
+where = "Error hook routine"
+see = ["SWS_Os_00321"]
+
+[[requirement]]
+id = "OSEK_ErrorHook_04"
+text = "Within ErrorHook, OSErrorGetServiceId shall yield the identifier of the system service in which the error was raised."
+source = "11.2"
+page = 41
+where = "Error management"
+
+[[requirement]]
+id = "OSEK_ErrorHook_05"
+text = "Where access to service parameters is enabled, the OS shall provide for each system service the macros OSError_<service>_<parameter> that yield, within ErrorHook, the parameter values of the failing call."
+source = "11.2"
+page = 41
+where = "Error management"
+see = ["SWS_Os_00439"]
+
+# ---------------------------------------------------------------------------
+# 11.3 System start-up
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_Startup_01"
+text = "When StartOS is called, the OS shall complete its own initialisation before it calls StartupHook."
+source = "11.3"
+page = 42
+where = "Figure 11-2, steps 3 and 4"
+
+[[requirement]]
+id = "OSEK_Startup_02"
+text = "Where StartupHook is configured, the OS shall call StartupHook after its own initialisation and before any task runs."
+source = "11.3"
+page = 42
+where = "Figure 11-2, step 4"
+
+[[requirement]]
+id = "OSEK_Startup_03"
+text = "While StartupHook executes, the OS shall keep all user interrupts disabled."
+source = "11.3"
+page = 42
+where = "Figure 11-2, step 4"
+note = "The text does not define 'user interrupts'. Step 1 says that category 2 interrupts do not run before step 5, so at least those are meant."
+
+[[requirement]]
+id = "OSEK_Startup_04"
+text = "After StartupHook has returned, the OS shall enable interrupts and start scheduling."
+source = "11.3"
+page = 42
+where = "Figure 11-2, step 5"
+
+[[requirement]]
+id = "OSEK_Startup_05"
+text = "During start-up, the OS shall activate every task that is configured as autostart for the application mode passed to StartOS."
+source = "11.3"
+page = 42
+where = "Figure 11-2, step 5"
+note = "The order in which autostart tasks of the same priority are activated is not defined."
+
+[[requirement]]
+id = "OSEK_Startup_06"
+text = "During start-up, the OS shall set every alarm that is configured as autostart for the application mode passed to StartOS."
+source = "11.3"
+page = 42
+where = "Figure 11-2, step 5"
+
+[[requirement]]
+id = "OSEK_Startup_07"
+text = "The OS shall activate the autostart tasks before it sets the autostart alarms."
+source = "11.3"
+page = 42
+where = "Figure 11-2, step 5"
+
+[[requirement]]
+id = "OSEK_Startup_08"
+text = "The OS shall treat the configured start value of an autostart alarm as relative to the counter value at start-up."
+source = "11.3"
+page = 42
+where = "Footnote 11"
+note = "AUTOSAR also allows absolute autostart alarms."
+see = ["SWS_Os_00476"]
+
+# ---------------------------------------------------------------------------
+# 11.5 Debugging
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_PreTaskHook_01"
+text = "Where PreTaskHook is configured, each time a task enters the running state, the OS shall call PreTaskHook after the transition and before the code of the task executes."
+source = "11.5"
+page = 43
+where = "Paragraph 1"
+
+[[requirement]]
+id = "OSEK_PreTaskHook_02"
+text = "While PreTaskHook executes, GetTaskID shall report the task that has just entered the running state."
+source = "11.5"
+page = 43
+where = "Paragraph 1"
+
+[[requirement]]
+id = "OSEK_PostTaskHook_01"
+text = "Where PostTaskHook is configured, each time a task is about to leave the running state, the OS shall call PostTaskHook before the transition."
+source = "11.5"
+page = 43
+where = "Paragraph 1"
+note = "Whether PostTaskHook is called when ShutdownOS is called while a task is running is left open by the text."
+
+[[requirement]]
+id = "OSEK_PostTaskHook_02"
+text = "While PostTaskHook executes, GetTaskID shall report the task that is about to leave the running state."
+source = "11.5"
+page = 43
+where = "Paragraph 1"
+
+# ---------------------------------------------------------------------------
+# 12.1 Definition of system objects
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_Static_01"
+text = "The OS shall provide no service that creates a task, resource, event, alarm or counter at run time."
+source = "12.1"
+page = 44
+where = "Paragraph 1"
+verify = "review"
+
+# ---------------------------------------------------------------------------
+# 13.1 Common data types
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_Status_01"
+text = "The OS shall provide the data type StatusType, with E_OK having the value 0."
+source = "13.1"
+page = 49
+where = "StatusType"
+
+[[requirement]]
+id = "OSEK_Status_02"
+text = "The OS shall define the error values E_OS_ACCESS = 1, E_OS_CALLEVEL = 2, E_OS_ID = 3, E_OS_LIMIT = 4, E_OS_NOFUNC = 5, E_OS_RESOURCE = 6, E_OS_STATE = 7 and E_OS_VALUE = 8."
+source = "13.1"
+page = 49
+where = "StatusType"
+
+[[requirement]]
+id = "OSEK_Status_03"
+text = "The OS shall give its implementation-specific error codes names that start with E_OS_SYS_ and values that do not overlap the error values of the system services."
+source = "13.1"
+page = 49
+where = "Internal errors"
+verify = "review"
+
+# ---------------------------------------------------------------------------
+# 13.7.1 Data types
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_OsApi_01"
+text = "The OS shall provide the data type AppModeType."
+source = "13.7.1"
+page = 66
+verify = "review"
+
+# ---------------------------------------------------------------------------
+# 13.7.2.1 GetActiveApplicationMode
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_GetActiveApplicationMode_01"
+text = "GetActiveApplicationMode shall return the application mode that the OS was started in."
+source = "13.7.2.1"
+page = 66
+where = "Description"
+
+[[requirement]]
+id = "OSEK_GetActiveApplicationMode_02"
+text = "The OS shall accept calls to GetActiveApplicationMode from tasks, category 2 interrupt service routines and all hook routines."
+source = "13.7.2.1"
+page = 66
+where = "Particularities, with Figure 12-1"
+note = "Figure 12-1 marks ErrorHook, PreTaskHook, PostTaskHook, StartupHook and ShutdownHook."
+
+# ---------------------------------------------------------------------------
+# 13.7.2.2 StartOS
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_StartOS_01"
+text = "When StartOS is called, the OS shall start in the application mode given in the call."
+source = "13.7.2.2"
+page = 67
+where = "Description"
+note = "OSEK does not require StartOS to return or not to return. AUTOSAR forbids the return."
+see = ["SWS_Os_00424"]
+
+[[requirement]]
+id = "OSEK_StartOS_02"
+text = "The application shall call StartOS only from outside the OS, that is not from a task, an interrupt service routine or a hook routine."
+source = "13.7.2.2"
+page = 67
+where = "Particularities, with Figure 12-1"
+kind = "constraint"
+
+# ---------------------------------------------------------------------------
+# 13.7.2.3 ShutdownOS
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_ShutdownOS_01"
+text = "Where ShutdownHook is configured, when ShutdownOS is called, the OS shall call ShutdownHook with the error code that was passed to ShutdownOS."
+source = "13.7.2.3"
+page = 67
+where = "Description"
+
+[[requirement]]
+id = "OSEK_ShutdownOS_02"
+text = "When ShutdownOS is called, the OS shall shut down after ShutdownHook has been called."
+source = "13.7.2.3"
+page = 67
+where = "Description"
+verify = "review"
+note = "OSEK leaves the behaviour after a returning ShutdownHook to the implementation. AUTOSAR defines it."
+see = ["SWS_Os_00425"]
+
+[[requirement]]
+id = "OSEK_ShutdownOS_03"
+text = "When the OS itself calls ShutdownOS, it shall pass an error code other than E_OK."
+source = "13.7.2.3"
+page = 67
+where = "Particularities"
+
+[[requirement]]
+id = "OSEK_ShutdownOS_04"
+text = "The OS shall accept calls to ShutdownOS from tasks, category 2 interrupt service routines, ErrorHook and StartupHook."
+source = "13.7.2.3"
+page = 67
+where = "Particularities, with Figure 12-1"
+
+[[requirement]]
+id = "OSEK_ShutdownOS_05"
+text = "The application shall pass to ShutdownOS only an error code that the OS supports."
+source = "13.7.2.3"
+page = 67
+where = "Description"
+kind = "constraint"
+
+# ---------------------------------------------------------------------------
+# 13.7.3 Constants
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_OsApi_02"
+text = "The OS shall provide the constant OSDEFAULTAPPMODE, an application mode that StartOS always accepts."
+source = "13.7.3"
+page = 67
+verify = "review"
+
+# ---------------------------------------------------------------------------
+# 13.8.1 Data types
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_HookApi_01"
+text = "The OS shall provide the data type OSServiceIdType."
+source = "13.8.1"
+page = 68
+verify = "review"
+
+# ---------------------------------------------------------------------------
+# 13.8.2 System services
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_HookApi_02"
+text = "The OS shall call the hook routines with these signatures: ErrorHook(StatusType), PreTaskHook(void), PostTaskHook(void), StartupHook(void) and ShutdownHook(StatusType), none of them returning a value."
+source = "13.8.2"
+page = 68
+where = "Syntax of each hook"
+verify = "review"
+
+# ---------------------------------------------------------------------------
+# 13.8.3 Constants
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_HookApi_03"
+text = "The OS shall provide, for every system service xx, a unique constant OSServiceId_xx of type OSServiceIdType."
+source = "13.8.3"
+page = 69
+verify = "review"

@@ -21,8 +21,33 @@ repository knows that name.
 | `tools/reqs.py` | Checks the files: `python3 tools/reqs.py` (add `--list` to print them) |
 | `spec/sws-os-requirements.html` | The browser, which shows these next to the AUTOSAR ones (see the README) |
 
-One file per topic. `task.toml` holds task management; add `resource.toml`,
-`event.toml` and so on as you reach them.
+One file per topic:
+
+| File | OSEK OS sections |
+|------|------------------|
+| `task.toml` | 4 Task management, 13.2 |
+| `interrupt.toml` | 3.1, 6 Interrupt processing, 13.3 |
+| `event.toml` | 7 Event mechanism, 13.5 |
+| `resource.toml` | 8 Resource management, 13.4 |
+| `alarm.toml` | 9 Alarms, 13.6 |
+| `os.toml` | 3.2, 5, 11, 12, 13.1, 13.7, 13.8: conformance, application modes, start-up, shutdown, hooks, error handling |
+
+Chapter 10 (messages) belongs to OSEK COM and chapter 14 says of itself that
+it is not normative, so neither has requirements here.
+
+## Terms
+
+The requirements use these words with one meaning each.
+
+| Term | Meaning |
+|------|---------|
+| Configured priority | The priority given to a task in the static configuration. It never changes. |
+| Current priority | The priority a task has right now: its configured priority, or the ceiling priority it was raised to while it holds a resource. |
+| Activation limit | The largest number of activations of one task that exist at the same time, counting the instance that is ready or running. |
+| Oldest, newest | The order of the ready tasks of one priority. The oldest is the next to run. |
+| Rescheduling | The scheduler makes its selection (highest current priority, then oldest) among the ready and running tasks, and switches tasks if the selected one is not running. |
+| Task level, interrupt level | Code running in a task, or in an interrupt service routine. |
+| In use | An alarm that has been set and has neither expired as a single alarm nor been cancelled. |
 
 ## What one requirement is
 
@@ -198,11 +223,19 @@ The browser lists the places in the code that mention each ID, and can filter
 for requirements nothing refers to yet. The aim is that every requirement has
 at least one test.
 
-## Where to start
+## Reviewing a requirement
 
-1. §4.3, the paragraph on multiple activation requests. Topic
-   `OSEK_Activation`. It answers what `_03` leaves open: what happens to a
-   recorded activation, and in which order.
-2. §13.2.3.2 TerminateTask. It contains a duty of the caller, so you will
-   use `kind = "constraint"`.
-3. §4.6.1 and §4.6.2, which the pointer in ActivateTask leads to.
+The list was written from the specification in one pass, and a requirement is
+only as good as its last review. Before implementing a service:
+
+1. Open its section of the specification next to its requirements.
+2. Label the sentences as in step 1 and check that every behaviour and every
+   status line has a requirement.
+3. Read each requirement on its own. Could you write its test without
+   opening the specification again? If not, the wording is not finished.
+4. Pay attention to every `note` that starts with "Interpretation": it marks
+   a place where the specification is silent or unclear and a reading was
+   chosen. Decide whether you agree.
+
+Fix what you find by the rules of step 5: correct a typo in place, but
+withdraw and replace a requirement whose meaning changes.

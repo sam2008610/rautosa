@@ -1,0 +1,403 @@
+# Resource requirements derived from OSEK OS 2.2.3 (chapter 8 and section 13.4).
+#
+# How to write an entry: docs/requirements-guide.md
+#
+# Sharing resources with interrupt service routines (section 8.6) is optional
+# in OSEK. Requirements that only apply then start with "Where resources are
+# shared with interrupt service routines".
+
+# ---------------------------------------------------------------------------
+# 8 Resource management
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_Resource_01"
+text = "The OS shall ensure that two tasks never occupy the same resource at the same time."
+source = "8"
+page = 29
+where = "List of guarantees"
+
+[[requirement]]
+id = "OSEK_Resource_02"
+text = "The OS shall never put a task into the waiting state as a result of an access to a resource."
+source = "8"
+page = 29
+where = "List of guarantees"
+verify = "analysis"
+
+# ---------------------------------------------------------------------------
+# 8.1 Behaviour during access to occupied resources
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_Resource_03"
+text = "Where resources are shared with interrupt service routines, the OS shall not start an interrupt service routine while a resource that the routine is configured to use is occupied."
+source = "8.1"
+page = 29
+where = "Paragraph 2"
+
+[[requirement]]
+id = "OSEK_Resource_07"
+text = "A task or interrupt service routine shall not occupy a resource that it already occupies."
+source = "8.1"
+page = 29
+where = "Paragraph 3"
+kind = "constraint"
+note = "In extended status the OS reports it, see OSEK_GetResource_04."
+see = ["OSEK_GetResource_04"]
+
+# ---------------------------------------------------------------------------
+# 8.2 Restrictions when using resources
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_Resource_04"
+text = "A task shall not call TerminateTask, ChainTask, Schedule or WaitEvent while it occupies a resource."
+source = "8.2"
+page = 29
+where = "Paragraph 1"
+kind = "constraint"
+note = "Its internal resource does not count, see OSEK_InternalResource_06. In extended status each of the four services reports the violation with E_OS_RESOURCE."
+see = ["OSEK_InternalResource_06"]
+
+[[requirement]]
+id = "OSEK_Resource_05"
+text = "An interrupt service routine shall release every resource it occupies before it completes."
+source = "8.2"
+page = 29
+where = "Paragraph 1"
+kind = "constraint"
+see = ["SWS_Os_00369"]
+
+[[requirement]]
+id = "OSEK_Resource_06"
+text = "A task or interrupt service routine that occupies several resources shall release them in the reverse order of occupation."
+source = "8.2"
+page = 29
+where = "Paragraph 2"
+kind = "constraint"
+note = "In extended status the OS reports a violation, see OSEK_ReleaseResource_05."
+see = ["OSEK_ReleaseResource_05"]
+
+# ---------------------------------------------------------------------------
+# 8.3 Scheduler as a resource
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_Resource_08"
+text = "The OS shall provide a resource named RES_SCHEDULER that every task is able to occupy."
+source = "8.3"
+page = 30
+where = "Paragraph 1"
+
+[[requirement]]
+id = "OSEK_Resource_09"
+text = "While a task occupies RES_SCHEDULER, the OS shall not switch to another task."
+source = "8.3"
+page = 30
+where = "Paragraph 2"
+
+[[requirement]]
+id = "OSEK_Resource_10"
+text = "While a task occupies RES_SCHEDULER, the OS shall continue to accept and process interrupts."
+source = "8.3"
+page = 30
+where = "Paragraph 2"
+
+# ---------------------------------------------------------------------------
+# 8.5 OSEK Priority Ceiling Protocol
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_Ceiling_01"
+text = "The OS shall assign a ceiling priority to each resource statically, at configuration time."
+source = "8.5"
+page = 31
+where = "First list item"
+verify = "review"
+
+[[requirement]]
+id = "OSEK_Ceiling_02"
+text = "The ceiling priority of a resource shall be at least as high as the highest configured priority among the tasks that access the resource."
+source = "8.5"
+page = 31
+where = "First list item"
+note = "The text also counts the tasks that access a resource linked to this one. Linked resources are an OIL concept that Rautosa has not decided on."
+
+[[requirement]]
+id = "OSEK_Ceiling_03"
+text = "The ceiling priority of a resource shall be lower than the configured priority of every task that does not access the resource and whose priority is higher than that of all tasks that access it."
+source = "8.5"
+page = 31
+where = "First list item"
+
+[[requirement]]
+id = "OSEK_Ceiling_04"
+text = "When a task occupies a resource whose ceiling priority is higher than the current priority of the task, the OS shall raise the current priority of the task to that ceiling priority."
+source = "8.5"
+page = 31
+where = "Second list item"
+
+[[requirement]]
+id = "OSEK_Ceiling_05"
+text = "When a task releases a resource, the OS shall set the current priority of the task back to the value it had before the task occupied that resource."
+source = "8.5"
+page = 31
+where = "Third list item"
+
+# ---------------------------------------------------------------------------
+# 8.6 OSEK Priority Ceiling Protocol with extensions for interrupt levels
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_Ceiling_06"
+text = "Where resources are shared with interrupt service routines, the OS shall treat every interrupt service routine as having a priority higher than the priority of every task when it determines ceiling priorities."
+source = "8.6"
+page = 32
+where = "Paragraph 2"
+
+[[requirement]]
+id = "OSEK_Ceiling_07"
+text = "Where resources are shared with interrupt service routines, the ceiling priority of a resource shall be at least as high as the highest priority among the tasks and interrupt service routines that access the resource."
+source = "8.6"
+page = 32
+where = "First list item"
+
+[[requirement]]
+id = "OSEK_Ceiling_08"
+text = "Where resources are shared with interrupt service routines, when a task releases a resource and its current priority is still the priority of an interrupt, the OS shall not perform rescheduling."
+source = "8.6"
+page = 32
+where = "Last paragraph"
+note = "This is the exception to OSEK_Rescheduling_06."
+see = ["OSEK_Rescheduling_06"]
+
+[[requirement]]
+id = "OSEK_Ceiling_09"
+text = "Where resources are shared with interrupt service routines, when an interrupt service routine occupies a resource whose ceiling priority is higher than its current priority, the OS shall raise the current priority of the routine to that ceiling priority."
+source = "8.6"
+page = 32
+where = "Second list item"
+
+[[requirement]]
+id = "OSEK_Ceiling_10"
+text = "Where resources are shared with interrupt service routines, when an interrupt service routine releases a resource, the OS shall set the current priority of the routine back to the value it had before the routine occupied that resource."
+source = "8.6"
+page = 32
+where = "Third list item"
+
+# ---------------------------------------------------------------------------
+# 8.7 Internal Resources
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_InternalResource_01"
+text = "The OS shall allow at most one internal resource to be assigned to a task."
+source = "8.7"
+page = 34
+where = "Paragraph 2"
+verify = "review"
+
+[[requirement]]
+id = "OSEK_InternalResource_02"
+text = "When a task with an internal resource enters the running state without already holding that resource, the OS shall take the resource for the task, raising its current priority to the ceiling priority of the resource."
+source = "8.7"
+page = 34
+where = "First list item"
+
+[[requirement]]
+id = "OSEK_InternalResource_03"
+text = "When a task is preempted, the OS shall not release the internal resource of that task."
+source = "8.7"
+page = 34
+where = "Footnote 10"
+
+[[requirement]]
+id = "OSEK_InternalResource_04"
+text = "The OS shall not take the internal resource of a task before the task enters the running state."
+source = "8.7"
+page = 34
+where = "Footnote 9"
+note = "So a task that is activated is placed among the ready tasks by its configured priority, not by the ceiling priority of its internal resource."
+
+[[requirement]]
+id = "OSEK_InternalResource_05"
+text = "The OS shall provide no resource identifier that lets GetResource or ReleaseResource address an internal resource."
+source = "8.7"
+page = 34
+where = "Paragraph 1"
+verify = "review"
+
+[[requirement]]
+id = "OSEK_InternalResource_06"
+text = "The OS shall not report E_OS_RESOURCE on account of the internal resource of the calling task."
+source = "8.7"
+page = 35
+where = "Paragraph after the list"
+note = "TerminateTask, ChainTask, Schedule and WaitEvent release the internal resource themselves."
+
+[[requirement]]
+id = "OSEK_InternalResource_07"
+text = "The OS shall treat a task configured as non-preemptable like a task with an internal resource whose ceiling priority equals that of RES_SCHEDULER."
+source = "8.7"
+page = 34
+where = "Paragraph after the list"
+verify = "analysis"
+note = "Footnote 16 in section 13.2.3.4 says the same. It is the reason Schedule works for a non-preemptable task."
+
+[[requirement]]
+id = "OSEK_InternalResource_08"
+text = "The OS shall allow internal resources to be assigned to tasks only."
+source = "8.7"
+page = 34
+where = "Paragraph 2"
+verify = "review"
+
+# Releasing the internal resource at the points of rescheduling is written
+# down per service: OSEK_TerminateTask_03, OSEK_ChainTask_05,
+# OSEK_Schedule_03 and OSEK_WaitEvent_04.
+
+# ---------------------------------------------------------------------------
+# 13.4.1 Data types
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_ResourceApi_01"
+text = "The OS shall provide the data type ResourceType."
+source = "13.4.1"
+page = 58
+verify = "review"
+
+# ---------------------------------------------------------------------------
+# 13.4.2.1 DeclareResource
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_ResourceApi_02"
+text = "The OS shall provide DeclareResource as an external declaration of a resource."
+source = "13.4.2.1"
+page = 58
+where = "Description"
+verify = "review"
+
+# ---------------------------------------------------------------------------
+# 13.4.3.1 GetResource
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_GetResource_01"
+text = "When GetResource succeeds, the calling task or interrupt service routine shall occupy the named resource until it releases it."
+source = "13.4.3.1"
+page = 58
+where = "Description"
+see = ["OSEK_Ceiling_04"]
+
+[[requirement]]
+id = "OSEK_GetResource_02"
+text = "When GetResource completes without detecting an error, it shall return E_OK."
+source = "13.4.3.1"
+page = 59
+where = "Status"
+level = "standard"
+
+[[requirement]]
+id = "OSEK_GetResource_03"
+text = "If GetResource is called with a resource ID that does not identify a configured resource, then GetResource shall return E_OS_ID."
+source = "13.4.3.1"
+page = 59
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_GetResource_04"
+text = "If GetResource is called for a resource that is already occupied by a task or interrupt service routine, then GetResource shall return E_OS_ACCESS."
+source = "13.4.3.1"
+page = 59
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_GetResource_05"
+text = "If GetResource is called by a task or interrupt service routine whose configured priority is higher than the ceiling priority of the resource, then GetResource shall return E_OS_ACCESS."
+source = "13.4.3.1"
+page = 59
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_GetResource_06"
+text = "The OS shall accept calls to GetResource from tasks and from category 2 interrupt service routines."
+source = "13.4.3.1"
+page = 59
+where = "Particularities, with Figure 12-1"
+
+# ---------------------------------------------------------------------------
+# 13.4.3.2 ReleaseResource
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_ReleaseResource_01"
+text = "When ReleaseResource succeeds, the named resource shall no longer be occupied."
+source = "13.4.3.2"
+page = 59
+where = "Description"
+see = ["OSEK_Ceiling_05", "OSEK_Rescheduling_06"]
+
+[[requirement]]
+id = "OSEK_ReleaseResource_02"
+text = "When ReleaseResource completes without detecting an error, it shall return E_OK."
+source = "13.4.3.2"
+page = 59
+where = "Status"
+level = "standard"
+
+[[requirement]]
+id = "OSEK_ReleaseResource_03"
+text = "If ReleaseResource is called with a resource ID that does not identify a configured resource, then ReleaseResource shall return E_OS_ID."
+source = "13.4.3.2"
+page = 59
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_ReleaseResource_04"
+text = "If ReleaseResource is called for a resource that is not occupied, then ReleaseResource shall return E_OS_NOFUNC."
+source = "13.4.3.2"
+page = 59
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_ReleaseResource_05"
+text = "If ReleaseResource is called for a resource while the caller has to release another resource first, then ReleaseResource shall return E_OS_NOFUNC."
+source = "13.4.3.2"
+page = 59
+where = "Status"
+level = "extended"
+note = "The other resource is one the caller occupied later, see OSEK_Resource_06."
+
+[[requirement]]
+id = "OSEK_ReleaseResource_06"
+text = "If ReleaseResource is called for a resource whose ceiling priority is lower than the configured priority of the calling task or interrupt service routine, then ReleaseResource shall return E_OS_ACCESS."
+source = "13.4.3.2"
+page = 59
+where = "Status"
+level = "extended"
+
+[[requirement]]
+id = "OSEK_ReleaseResource_07"
+text = "The OS shall accept calls to ReleaseResource from tasks and from category 2 interrupt service routines."
+source = "13.4.3.2"
+page = 59
+where = "Particularities, with Figure 12-1"
+
+# ---------------------------------------------------------------------------
+# 13.4.4 Constants
+# ---------------------------------------------------------------------------
+
+[[requirement]]
+id = "OSEK_ResourceApi_03"
+text = "The OS shall provide the constant RES_SCHEDULER of type ResourceType."
+source = "13.4.4"
+page = 59
+verify = "review"
