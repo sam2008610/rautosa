@@ -32,10 +32,11 @@ verify = "review"
 
 [[requirement]]
 id = "OSEK_Idle_01"
-text = "While no task is in the running or ready state and no interrupt service routine is executing, the OS shall execute its idle mechanism."
+text = "While no task is in the running or ready state and no interrupt service routine, hook routine or alarm-callback routine is executing, the OS shall execute its idle mechanism."
 source = "4.1"
 page = 16
 where = "Paragraph 2"
+note = "The text says: when no other system or application functionality is active."
 
 # ---------------------------------------------------------------------------
 # 4.2 Task state model
@@ -45,7 +46,7 @@ where = "Paragraph 2"
 id = "OSEK_TaskState_06"
 text = "The OS shall change the state of a task only by the transitions activate, start, wait, release, preempt and terminate of the task state models."
 source = "4.2"
-page = 16
+page = 17
 where = "Figures 4-1 to 4-4"
 verify = "analysis"
 note = "In particular there is no transition from suspended to waiting, and no way to terminate a task that is not running."
@@ -55,8 +56,8 @@ id = "OSEK_TaskState_07"
 text = "When a task that was preempted or waiting enters the running state again, the OS shall continue it at the point where it left the running state."
 source = "4.2"
 page = 16
-where = "Paragraph 2"
-note = "Section 4.6.1 says the same for a preempted task: its context is saved so that it continues where it was preempted."
+where = "Paragraph 3"
+note = "The paragraph only says that the OS saves and restores the task context. Section 4.6.1 states the consequence for a preempted task. Interpretation: the same holds for a task that was waiting."
 
 # ---------------------------------------------------------------------------
 # 4.2.1 Extended tasks
@@ -257,10 +258,11 @@ where = "List of rescheduling cases"
 
 [[requirement]]
 id = "OSEK_Rescheduling_06"
-text = "While a preemptable task is running, when it releases a resource through ReleaseResource, the OS shall perform rescheduling before control returns to it."
+text = "While a preemptable task is running, when it releases a resource through ReleaseResource and its current priority is then a task priority, the OS shall perform rescheduling before control returns to it."
 source = "4.6.1"
 page = 21
 where = "List of rescheduling cases"
+note = "The condition on the priority comes from section 8.6: no rescheduling while the task still has the priority of an interrupt."
 see = ["OSEK_Ceiling_08"]
 
 [[requirement]]
@@ -354,7 +356,7 @@ text = "When ChainTask activates a task, the OS shall treat that task as the new
 source = "4.7"
 page = 23
 where = "Paragraph 2"
-note = "This also holds when a task chains itself."
+note = "Interpretation: the text says that chaining itself puts the newly activated task last. This reads it as the chaining operation in general, so it holds for any task named in the call, including the caller."
 
 # ---------------------------------------------------------------------------
 # 13.2.1 Data types
@@ -392,7 +394,7 @@ where = "Description"
 
 [[requirement]]
 id = "OSEK_ActivateTask_02"
-text = "When a task that was activated from the suspended state enters the running state for the first time, the OS shall begin execution at the first statement of the task's entry function."
+text = "When a task that was activated from the suspended state enters the running state for the first time after that activation, the OS shall begin execution at the first statement of the task's entry function."
 source = "13.2.3.1"
 page = 50
 where = "Description"
@@ -428,6 +430,7 @@ text = "When ActivateTask moves an extended task from the suspended state to the
 source = "13.2.3.1"
 page = 50
 where = "Particularities"
+see = ["OSEK_Event_02"]
 
 [[requirement]]
 id = "OSEK_ActivateTask_07"
@@ -555,11 +558,17 @@ where = "Description"
 
 [[requirement]]
 id = "OSEK_ChainTask_03"
-text = "When ChainTask names the calling task itself, the OS shall make that task ready again without counting an additional activation."
+text = "When ChainTask names the calling task itself, the OS shall make that task ready again instead of moving it to the suspended state."
 source = "13.2.3.3"
 page = 51
 where = "Particularities"
-note = "The task does not pass through the suspended state."
+
+[[requirement]]
+id = "OSEK_ChainTask_16"
+text = "When ChainTask names the calling task itself, the OS shall not count an additional activation of that task."
+source = "13.2.3.3"
+page = 51
+where = "Particularities"
 
 [[requirement]]
 id = "OSEK_ChainTask_05"
@@ -581,6 +590,7 @@ text = "When ChainTask moves an extended task from the suspended state to the re
 source = "13.2.3.3"
 page = 52
 where = "Particularities"
+see = ["OSEK_Event_02"]
 
 [[requirement]]
 id = "OSEK_ChainTask_08"
@@ -655,7 +665,7 @@ where = "Figure 12-1"
 
 [[requirement]]
 id = "OSEK_Schedule_01"
-text = "When Schedule is called while a ready task has a higher priority than the configured priority of the calling task, the OS shall preempt the calling task in favour of the highest-priority ready task."
+text = "When Schedule is called by a task that has an internal resource while a ready task has a higher priority than the configured priority of the calling task, the OS shall preempt the calling task in favour of the highest-priority ready task."
 source = "13.2.3.4"
 page = 52
 where = "Description"
@@ -664,7 +674,7 @@ see = ["OSEK_Priority_07"]
 
 [[requirement]]
 id = "OSEK_Schedule_02"
-text = "When Schedule is called while no ready task has a higher priority than the configured priority of the calling task, Schedule shall return without a task switch."
+text = "When Schedule is called by a task that has an internal resource while no ready task has a higher priority than the configured priority of the calling task, Schedule shall return without a task switch."
 source = "13.2.3.4"
 page = 52
 where = "Description"

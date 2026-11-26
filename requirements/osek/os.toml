@@ -140,6 +140,15 @@ verify = "review"
 see = ["OSEK_ShutdownOS_03"]
 
 [[requirement]]
+id = "OSEK_Error_03"
+text = "The application shall not use the value of an output parameter of a system service that returned a status other than E_OK."
+source = "11.2"
+page = 40
+where = "General remarks"
+kind = "constraint"
+note = "The text leaves the output parameters undefined in that case."
+
+[[requirement]]
 id = "OSEK_ErrorHook_01"
 text = "Where ErrorHook is configured, when a system service returns a status other than E_OK, the OS shall call ErrorHook with that status before the service returns to its caller."
 source = "11.2"
@@ -171,10 +180,11 @@ where = "Error management"
 
 [[requirement]]
 id = "OSEK_ErrorHook_05"
-text = "Where access to service parameters is enabled, the OS shall provide for each system service the macros OSError_<service>_<parameter> that yield, within ErrorHook, the parameter values of the failing call."
+text = "Where access to service parameters is enabled, the OS shall provide, for each system service whose first parameter is an object identifier, a macro OSError_<service>_<parameter> that yields that parameter of the failing call within ErrorHook."
 source = "11.2"
 page = 41
 where = "Error management"
+note = "Macros for the other parameters are optional and follow the same naming scheme."
 see = ["SWS_Os_00439"]
 
 # ---------------------------------------------------------------------------
@@ -205,7 +215,7 @@ note = "The text does not define 'user interrupts'. Step 1 says that category 2 
 
 [[requirement]]
 id = "OSEK_Startup_04"
-text = "After StartupHook has returned, the OS shall enable interrupts and start scheduling."
+text = "When its initialisation is complete and StartupHook, where configured, has returned, the OS shall enable interrupts and start scheduling."
 source = "11.3"
 page = 42
 where = "Figure 11-2, step 5"
@@ -243,11 +253,19 @@ see = ["SWS_Os_00476"]
 
 [[requirement]]
 id = "OSEK_Startup_09"
-text = "During start-up, the OS shall set every counter to zero before it sets the autostart alarms."
+text = "Where a counter can be reset, the OS shall set it to zero during start-up, before it sets the autostart alarms."
 source = "11.3"
 page = 42
 where = "Footnote 11"
-note = "The text adds 'if possible' and excepts counters such as calendar timers."
+note = "The text says 'if possible' and names calendar timers as an exception."
+
+[[requirement]]
+id = "OSEK_Startup_10"
+text = "From the call of StartOS until it starts scheduling, the OS shall not let a category 2 interrupt service routine run."
+source = "11.3"
+page = 42
+where = "Figure 11-2, step 1"
+note = "Interpretation: the text only says that category 2 interrupts are not allowed to run before step 5. Before StartOS is called the OS is not in control, so until then keeping them disabled is the duty of the application."
 
 # ---------------------------------------------------------------------------
 # 11.5 Debugging
@@ -258,21 +276,21 @@ id = "OSEK_PreTaskHook_01"
 text = "Where PreTaskHook is configured, each time a task enters the running state, the OS shall call PreTaskHook after the transition and before the code of the task executes."
 source = "11.5"
 page = 43
-where = "Paragraph 1"
+where = "Text before Figure 11-3"
 
 [[requirement]]
 id = "OSEK_PreTaskHook_02"
 text = "While PreTaskHook executes, GetTaskID shall report the task that has just entered the running state."
 source = "11.5"
 page = 43
-where = "Paragraph 1"
+where = "Text before Figure 11-3"
 
 [[requirement]]
 id = "OSEK_PostTaskHook_01"
 text = "Where PostTaskHook is configured, each time a task is about to leave the running state, the OS shall call PostTaskHook before the transition."
 source = "11.5"
 page = 43
-where = "Paragraph 1"
+where = "Text before Figure 11-3"
 note = "Whether PostTaskHook is called when ShutdownOS is called while a task is running is left open by the text."
 
 [[requirement]]
@@ -280,7 +298,7 @@ id = "OSEK_PostTaskHook_02"
 text = "While PostTaskHook executes, GetTaskID shall report the task that is about to leave the running state."
 source = "11.5"
 page = 43
-where = "Paragraph 1"
+where = "Text before Figure 11-3"
 
 # ---------------------------------------------------------------------------
 # 12.1 Definition of system objects
@@ -384,7 +402,7 @@ where = "Description"
 
 [[requirement]]
 id = "OSEK_ShutdownOS_02"
-text = "When ShutdownOS is called, the OS shall shut down after ShutdownHook has been called."
+text = "When ShutdownOS is called, the OS shall shut down, after calling ShutdownHook where that hook is configured."
 source = "13.7.2.3"
 page = 67
 where = "Description"

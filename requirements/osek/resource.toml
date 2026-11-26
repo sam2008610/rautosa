@@ -76,12 +76,12 @@ see = ["OSEK_GetResource_04"]
 
 [[requirement]]
 id = "OSEK_Resource_04"
-text = "A task shall not call TerminateTask, ChainTask, Schedule or WaitEvent while it occupies a resource."
+text = "A task shall not call TerminateTask, ChainTask, Schedule or WaitEvent while it occupies a resource other than its internal resource."
 source = "8.2"
 page = 29
 where = "Paragraph 1"
 kind = "constraint"
-note = "Its internal resource does not count, see OSEK_InternalResource_06. In extended status each of the four services reports the violation with E_OS_RESOURCE."
+note = "The exception for the internal resource is stated in section 8.7, see OSEK_InternalResource_06. In extended status each of the four services reports the violation with E_OS_RESOURCE."
 see = ["OSEK_InternalResource_06"]
 
 [[requirement]]
@@ -142,15 +142,15 @@ verify = "review"
 
 [[requirement]]
 id = "OSEK_Ceiling_02"
-text = "The ceiling priority of a resource shall be at least as high as the highest configured priority among the tasks that access the resource."
+text = "The OS shall give each resource a ceiling priority that is at least as high as the highest configured priority among the tasks that access the resource."
 source = "8.5"
 page = 31
 where = "First list item"
-note = "The text also counts the tasks that access a resource linked to this one. Linked resources are an OIL concept that Rautosa has not decided on."
+note = "The ceiling priority is not chosen by the application: the status description of GetResource calls it the calculated ceiling priority. The text also counts the tasks that access a resource linked to this one. Linked resources are an OIL concept that Rautosa has not decided on."
 
 [[requirement]]
 id = "OSEK_Ceiling_03"
-text = "The ceiling priority of a resource shall be lower than the configured priority of every task that does not access the resource and whose priority is higher than that of all tasks that access it."
+text = "The OS shall give each resource a ceiling priority that is lower than the configured priority of every task that does not access the resource and whose priority is higher than that of all tasks that access it."
 source = "8.5"
 page = 31
 where = "First list item"
@@ -169,6 +169,14 @@ source = "8.5"
 page = 31
 where = "Third list item"
 
+[[requirement]]
+id = "OSEK_Ceiling_12"
+text = "While a task occupies a resource, the OS shall not let another task that accesses the same resource enter the running state."
+source = "8.5"
+page = 31
+where = "Paragraph after the list"
+note = "The text presents this as the consequence of raising the priority. It is the property a test of the protocol observes."
+
 # ---------------------------------------------------------------------------
 # 8.6 OSEK Priority Ceiling Protocol with extensions for interrupt levels
 # ---------------------------------------------------------------------------
@@ -182,7 +190,7 @@ where = "Paragraph 2"
 
 [[requirement]]
 id = "OSEK_Ceiling_07"
-text = "Where resources are shared with interrupt service routines, the ceiling priority of a resource shall be at least as high as the highest priority among the tasks and interrupt service routines that access the resource."
+text = "Where resources are shared with interrupt service routines, the OS shall give each resource a ceiling priority that is at least as high as the highest priority among the tasks and interrupt service routines that access the resource."
 source = "8.6"
 page = 32
 where = "First list item"
@@ -212,7 +220,7 @@ where = "Third list item"
 
 [[requirement]]
 id = "OSEK_Ceiling_11"
-text = "Where resources are shared with interrupt service routines, the ceiling priority of a resource shall be lower than the priority of every task and interrupt service routine that does not access the resource and has a higher priority than all those that access it."
+text = "Where resources are shared with interrupt service routines, the OS shall give each resource a ceiling priority that is lower than the priority of every task and interrupt service routine that does not access the resource and has a higher priority than all those that access it."
 source = "8.6"
 page = 32
 where = "First list item"

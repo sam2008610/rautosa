@@ -17,12 +17,12 @@ note = "Section 13.6.4 calls it the system counter."
 
 [[requirement]]
 id = "OSEK_Counter_02"
-text = "When a counter is advanced, the OS shall process the alarms attached to that counter."
+text = "When a counter is advanced, the OS shall expire every alarm attached to that counter whose expiry value has been reached."
 source = "9.1"
 page = 36
 where = "Paragraph 3"
-note = "OSEK defines no service to advance a counter. AUTOSAR adds IncrementCounter."
-see = ["SWS_Os_00399"]
+note = "What expiring an alarm does is OSEK_Alarm_04 to OSEK_Alarm_06. OSEK defines no service to advance a counter. AUTOSAR adds IncrementCounter."
+see = ["OSEK_Alarm_04", "OSEK_Alarm_05", "OSEK_Alarm_06", "SWS_Os_00399"]
 
 # ---------------------------------------------------------------------------
 # 9.2 Alarm management
@@ -87,6 +87,8 @@ text = "When an expiring alarm activates a task, the OS shall apply the same rul
 source = "9.2"
 page = 36
 where = "Paragraph after the list"
+note = "The rules are OSEK_ActivateTask_01 to OSEK_ActivateTask_06, except that the status is reported through ErrorHook only (OSEK_ErrorHook_03)."
+see = ["OSEK_ActivateTask_01", "OSEK_ErrorHook_03"]
 
 [[requirement]]
 id = "OSEK_Alarm_09"
@@ -94,6 +96,17 @@ text = "When an expiring alarm sets an event, the OS shall apply the same rules 
 source = "9.2"
 page = 36
 where = "Paragraph after the list"
+note = "The rules are OSEK_SetEvent_01 to OSEK_SetEvent_04, except that the status is reported through ErrorHook only (OSEK_ErrorHook_03)."
+see = ["OSEK_SetEvent_01", "OSEK_ErrorHook_03"]
+
+[[requirement]]
+id = "OSEK_Alarm_11"
+text = "An alarm-callback routine shall call only the system services that Figure 12-1 allows for alarm-callback routines."
+source = "9.2"
+page = 36
+where = "Paragraph after the list"
+kind = "constraint"
+note = "Figure 12-1 allows SuspendAllInterrupts and ResumeAllInterrupts only."
 
 [[requirement]]
 id = "OSEK_Alarm_10"
